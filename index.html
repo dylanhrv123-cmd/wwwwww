@@ -871,7 +871,7 @@
         body: JSON.stringify({ email, password })
       });
       const body = await res.json().catch(() => ({}));
-      if (!res.ok) { authErr.textContent = body.error || "No se pudo entrar."; return; }
+      if (!res.ok) { authErr.textContent = body.error || ("No se pudo entrar (código " + res.status + ")."); return; }
       token = body.token;
       localStorage.setItem(TOKEN_KEY, token);
       await loadData();
