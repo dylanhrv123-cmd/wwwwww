@@ -118,6 +118,54 @@ exports.handler = async (event) => {
       }
     }
 
+    if (path === "/ai" && method === "POST") {
+      const s = await getSession(st, event);
+      if (!s) return json(401, { error: "Sesión no válida." });
+
+      const { message, today, data: ctx } = parseBody(event);
+      if (typeof message !== "string" || !message.trim())
+        return json(400, { error: "Escribe un mensaje." });
+      if (!process.env.GEMINI_API_KEY)
+        return json(500, { error: "Falta configurar GEMINI_API_KEY en Netlify." });
+
+      const system = [
+        "Eres el asistente de una app de organización de vida. Respondes siempre en español, de forma breve y amable.",
+        "Responde SOLO con JSON con esta forma: {\"reply\": \"texto corto\", \"actions\": [...]}.",
+        "Acciones permitidas (usa solo estas):",
+        "- {\"type\":\"add_event\",\"title\":\"...\",\"date\":\"AAAA-MM-DD\",\"time\":\"HH:MM\" o \"\"}",
+        "- {\"type\":\"add_task\",\"title\":\"...\",\"area\":\"Trabajo|Salud|Casa|Personal\",\"date\":\"AAAA-MM-DD\" o \"\",\"priority\":\"alta|media|baja\"}",
+        "- {\"type\":\"add_habit\",\"title\":\"...\",\"time\":\"HH:MM\" o \"\",\"end\":\"HH:MM\" o \"\",\"days\":[0-6]}  (0 = domingo, 6 = sábado)",
+        "Si la petición es una pregunta (por ejemplo, qué tengo hoy), responde en reply usando los datos y deja actions vacío.",
+        "Si la petición pide crear algo, incluye la acción correspondiente y confirma en reply.",
+        "Hoy es " + (today || "desconocido") + "."
+      ].join("\n");
+
+      const context = "Datos actuales del usuario:\n" + JSON.stringify(cleanData(ctx || {}));
+
+      const r = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + process.env.GEMINI_API_KEY,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: system }] },
+            contents: [{ role: "user", parts: [{ text: context + "\n\nPetición: " + message }] }],
+            generationConfig: { responseMimeType: "application/json" },
+          }),
+        }
+      );
+      const out = await r.json();
+      if (!r.ok) return json(502, { error: "Gemini respondió con error: " + ((out.error && out.error.message) || r.status) });
+
+      const text = (out.candidates && out.candidates[0] && out.candidates[0].content.parts[0].text) || "{}";
+      let parsed;
+      try { parsed = JSON.parse(text); } catch (e) { parsed = { reply: "No pude entender la respuesta. Intenta de nuevo.", actions: [] }; }
+      return json(200, {
+        reply: String(parsed.reply || "Listo."),
+        actions: Array.isArray(parsed.actions) ? parsed.actions : [],
+      });
+    }
+
     return json(404, { error: "Ruta no encontrada: " + path });
   } catch (err) {
     console.error(err);
