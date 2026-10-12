@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi organización</title>
+<style>
+  :root {
+    --bg: #0b0b0c;
+    --panel: #151517;
+    --line: #26262a;
+    --text: #f2f2f3;
+    --muted: #8a8a92;
+    --accent: #e8e8ea;
+    --hot: #7c5cff;
+    --radius: 20px;
+  }
+  * { box-sizing: border-box; }
+  :root { color-scheme: dark; }
+  input[type="time"], input[type="date"] { color-scheme: dark; min-width: 0; }
+  input[type="time"]::-webkit-calendar-picker-indicator,
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(.75); opacity: .6; cursor: pointer; transition: opacity .2s;
+  }
+  input[type="time"]::-webkit-calendar-picker-indicator:hover,
+  input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+  option { background: var(--panel); color: var(--text); }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; background: none; border: 1px solid var(--line); border-radius: 10px;
+    padding: 8px 12px; transition: background .2s, border-color .2s; }
+  button:hover { background: var(--panel); border-color: #3a3a40; }
+  button.primary { background: var(--accent); color: #0b0b0c; border-color: var(--accent); font-weight: 600; }
+  button.primary:hover { opacity: .9; }
+  input, select, textarea { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 9px 12px; width: 100%; outline: none; }
+  input:focus, select:focus, textarea:focus { border-color: #4a4a52; }
+
+  .app { display: grid; grid-template-columns: 220px 1fr; height: 100%; }
+  aside { border-right: 1px solid var(--line); padding: 28px 18px; display: flex; flex-direction: column; gap: 6px; }
+  .brand { font-size: 13px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-bottom: 24px; }
+  .nav button { width: 100%; text-align: left; border: none; padding: 10px 12px; color: var(--muted); }
+  .nav button.active { color: var(--text); background: var(--panel); }
+  main { overflow-y: auto; padding: 36px 48px; }
+  h1 { font-size: 46px; font-weight: 700; letter-spacing: -.025em; margin: 0 0 6px;
+    background: linear-gradient(90deg, #ffffff 30%, #b9a6ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { color: var(--muted); margin: 0 0 28px; }
+  .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 24px; }
+  .spacer { flex: 1; }
+
+  .view { display: none; animation: fade .35s ease; }
+  .view.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* Calendario */
+  .cal { display: grid; grid-template-columns: repeat(7, 1fr); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .cal .dow { padding: 10px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; border-bottom: 1px solid var(--line); }
+  .cal .day { min-height: 110px; padding: 8px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    cursor: pointer; transition: background .2s; }
+  .cal .day:hover { background: var(--panel); }
+  .cal .day.other { color: #55555c; }
+  .cal .day.today .num { background: var(--accent); color: #0b0b0c; }
+  .cal .num { display: inline-block; min-width: 26px; text-align: center; border-radius: 999px; padding: 2px 4px; font-size: 13px; margin-bottom: 6px; }
+  .ev { font-size: 12px; padding: 3px 7px; border-radius: 6px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #0b0b0c; }
+
+  /* Tareas */
+  .tasks { display: grid; gap: 10px; }
+  .tasks.grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+  .task { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; transition: transform .2s; }
+  .task:hover { transform: translateY(-2px); }
+  .task.done .t { text-decoration: line-through; color: var(--muted); }
+  .task .t { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .task .meta { font-size: 12px; color: var(--muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .tag { border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; }
+  .task .actions { margin-top: 12px; display: flex; gap: 8px; }
+  .task .actions button { padding: 5px 10px; font-size: 12px; }
+
+  .form { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 10px; margin-bottom: 26px; }
+  .form.wide { grid-template-columns: 2fr 1fr 1fr auto; }
+
+  /* Notas */
+  .notes { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .note { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+  .note textarea { min-height: 120px; border: none; background: transparent; padding: 0; resize: vertical; }
+  .note .foot { display: flex; justify-content: flex-end; margin-top: 8px; }
+  .note button { font-size: 12px; padding: 4px 10px; }
+
+  /* Asistente */
+  .chat { max-width: 680px; }
+  .log { border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; min-height: 260px; margin-bottom: 14px;
+    display: flex; flex-direction: column; gap: 10px; background: var(--panel); }
+  .msg { padding: 10px 14px; border-radius: 12px; max-width: 85%; line-height: 1.45; font-size: 15px; }
+  .msg.me { background: var(--accent); color: #0b0b0c; align-self: flex-end; }
+  .msg.ai { background: var(--bg); border: 1px solid var(--line); align-self: flex-start; }
+  .hint { color: var(--muted); font-size: 13px; margin-top: 10px; }
+
+  /* Modal */
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: center; justify-content: center; padding: 20px; }
+  .modal.open { display: flex; animation: fade .25s ease; }
+  .modal .box { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; width: 100%; max-width: 420px; display: grid; gap: 12px; }
+  .modal h2 { margin: 0; font-size: 22px; }
+
+  .app { background: radial-gradient(1000px 500px at 85% -10%, #1f1838 0%, transparent 60%),
+                     radial-gradient(800px 500px at -10% 110%, #0f2a24 0%, transparent 55%), var(--bg); }
+  .nav button.active { box-shadow: inset 2px 0 0 var(--accent); }
+  .hello { text-transform: capitalize; color: var(--muted); font-size: 14px; letter-spacing: .04em; margin-bottom: 4px; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .16em; color: var(--muted); font-weight: 600; margin: 34px 0 12px; }
+
+  .progress { display: flex; align-items: center; gap: 14px; margin: 18px 0 8px; color: var(--muted); font-size: 14px; }
+  .bar { flex: 1; max-width: 360px; height: 8px; background: var(--panel); border-radius: 999px; overflow: hidden; border: 1px solid var(--line); }
+  .bar span { display: block; height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, #c9b8ff, #a8e6cf); transition: width .5s ease; }
+
+  .habit-check { width: 100%; display: flex; align-items: center; gap: 14px; background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 14px 16px; text-align: left; margin-bottom: 10px; }
+  .habit-check:hover { transform: translateY(-1px); }
+  .habit-check .box { width: 24px; height: 24px; border-radius: 8px; border: 1.5px solid #4a4a52; display: grid; place-items: center;
+    font-size: 14px; flex-shrink: 0; transition: all .25s; }
+  .habit-check.done .box { background: var(--accent); border-color: var(--accent); color: #0b0b0c; }
+  .habit-check .name { flex: 1; font-size: 16px; transition: color .25s; }
+  .habit-check.done .name { color: var(--muted); text-decoration: line-through; }
+  .habit-check .time { color: var(--muted); font-size: 13px; }
+
+  .habit-form { display: grid; grid-template-columns: 2fr 1.3fr 1.3fr auto; gap: 10px; margin-bottom: 22px; align-items: end; }
+  .fld { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
+  .tpick { display: flex; gap: 6px; align-items: center; }
+  .tpick select { width: auto; flex: 1; min-width: 0; padding: 9px 8px; }
+  .tpick .sep { color: var(--muted); font-size: 16px; }
+  .habit-check.now { border-color: #5a4a9a; box-shadow: 0 0 0 1px #5a4a9a inset; }
+  .habit-check .tag-now { font-size: 11px; color: #c9b8ff; border: 1px solid #5a4a9a; border-radius: 999px; padding: 2px 8px; }
+  .days { grid-column: 1 / -1; display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { padding: 6px 12px; font-size: 13px; border-radius: 999px; }
+  .chip.on { background: var(--accent); color: #0b0b0c; border-color: var(--accent); }
+  .habit-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: var(--panel);
+    border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; }
+  .habit-row .t { font-weight: 600; margin-bottom: 4px; }
+  .habit-row .meta { color: var(--muted); font-size: 13px; }
+  .habit-row .del, .habit-row .edit { font-size: 12px; padding: 5px 10px; }
+  .habit-row .acts { display: flex; gap: 6px; flex-shrink: 0; }
+
+  .agenda-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .agenda-row .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .agenda-row .time { color: var(--muted); font-size: 13px; min-width: 90px; }
+  .agenda-row .name { font-size: 15px; }
+  .agenda-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; margin-bottom: 10px;
+    background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--c, #e8e8ea);
+    border-radius: 18px; transition: transform .2s, border-color .2s; }
+  .agenda-row:hover { transform: translateX(4px); }
+  .agenda-row .badge { min-width: 70px; text-align: center; font-weight: 700; font-size: 14px; padding: 7px 10px;
+    border-radius: 12px; background: var(--c, #e8e8ea); color: #0b0b0c; }
+  .agenda-row .info { flex: 1; min-width: 0; }
+  .agenda-row .name { font-size: 16px; font-weight: 600; }
+  .agenda-row .sub2 { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .agenda-row.next { border-color: #5a4a9a; box-shadow: 0 0 0 1px #5a4a9a inset; }
+  .agenda-row.next .sub2 { color: #c9b8ff; font-weight: 600; }
+  .agenda-row.past { opacity: .45; }
+
+  /* Acceso */
+  .auth { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 20px;
+    background: radial-gradient(900px 500px at 80% -10%, #1f1838 0%, transparent 60%), var(--bg); z-index: 50; }
+  .auth.open { display: flex; animation: fade .35s ease; }
+  .auth-box { width: 100%; max-width: 360px; display: grid; gap: 12px; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 22px; padding: 28px; }
+  .auth-box .brand { margin-bottom: 4px; }
+  .auth-box h2 { margin: 0 0 6px; font-size: 26px; text-transform: none; letter-spacing: -.01em; color: var(--text); font-weight: 700; }
+  .auth-err { color: #ff9a9a; font-size: 13px; min-height: 16px; }
+  .auth-box .switch { background: none; border: none; color: var(--muted); padding: 6px; }
+  .auth-box .switch:hover { color: var(--text); background: none; }
+  body.locked .app { display: none; }
+  .logout { margin-top: auto; font-size: 13px; color: var(--muted); }
+
+  /* Esquinas más suaves */
+  button, input, select, textarea { border-radius: 14px; }
+  .tpick select { border-radius: 12px; }
+  .cal { border-radius: 22px; }
+  .ev { border-radius: 999px; padding: 3px 10px; }
+  .task, .note, .log, .habit-check, .habit-row, .modal .box, .chip { border-radius: 20px; }
+  .chip { border-radius: 999px; }
+  .msg { border-radius: 18px; }
+  .bar, .bar span { border-radius: 999px; }
+
+  @media (max-width: 760px) {
+    .habit-form { grid-template-columns: 1fr; }
+    .app { grid-template-columns: 1fr; }
+    aside { flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--line); padding: 14px; }
+    .brand { display: none; }
+    .nav { display: flex; gap: 6px; }
+    .nav button { width: auto; white-space: nowrap; }
+    main { padding: 24px 18px; }
+    h1 { font-size: 34px; }
+    .form, .form.wide { grid-template-columns: 1fr; }
+    .cal .day { min-height: 70px; }
+    .cal .ev { font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand">Mi organización</div>
+    <nav class="nav">
+      <button class="active" data-view="today">Hoy</button>
+      <button data-view="calendar">Calendario</button>
+      <button data-view="habits">Hábitos</button>
+      <button data-view="tasks">Tareas</button>
+      <button data-view="notes">Notas</button>
+      <button data-view="assistant">Asistente</button>
+    </nav>
+    <button class="logout" id="logoutBtn">Cerrar sesión</button>
+  </aside>
+
+  <main>
+    <!-- HOY -->
+    <section class="view active" id="today">
+      <div class="hello" id="todayDate"></div>
+      <h1 id="todayGreet"></h1>
+      <div class="progress"><div class="bar"><span id="progressBar"></span></div><span id="progressText"></span></div>
+      <h2>Hábitos de hoy</h2>
+      <div id="todayHabits"></div>
+      <h2>Agenda</h2>
+      <div id="todayEvents"></div>
+      <h2>Tareas para hoy</h2>
+      <div id="todayTasks"></div>
+    </section>
+
+    <!-- HÁBITOS -->
+    <section class="view" id="habits">
+      <h1>Hábitos</h1>
+      <p class="sub">Acciones que se repiten. Elige los días y aparecerán en Hoy cada semana.</p>
+      <div class="habit-form">
+        <input id="hTitle" placeholder="Ej: Ir al gym, leer 20 min, tomar agua">
+        <div class="fld">Inicio<div class="tpick" id="hTimeBox"></div></div>
+        <div class="fld">Fin<div class="tpick" id="hEndBox"></div></div>
+        <button class="primary" id="addHabit">Agregar</button>
+        <div class="days" id="hDays"></div>
+      </div>
+      <div id="habitList"></div>
+    </section>
+
+    <!-- CALENDARIO -->
+    <section class="view" id="calendar">
+      <h1 id="monthTitle"></h1>
+      <p class="sub">Haz clic en un día para agregar un evento.</p>
+      <div class="toolbar">
+        <button id="prevMonth">←</button>
+        <button id="todayBtn">Hoy</button>
+        <button id="nextMonth">→</button>
+        <span class="spacer"></span>
+        <button class="primary" id="newEventBtn">+ Evento</button>
+      </div>
+      <div class="cal" id="cal"></div>
+    </section>
+
+    <!-- TAREAS -->
+    <section class="view" id="tasks">
+      <h1>Tareas</h1>
+      <p class="sub">Pendientes con fecha y área.</p>
+      <div class="form">
+        <input id="taskTitle" placeholder="Nueva tarea">
+        <select id="taskArea">
+          <option>Trabajo</option><option>Salud</option><option>Casa</option><option>Personal</option>
+        </select>
+        <input id="taskDate" type="date">
+        <select id="taskPriority">
+          <option value="alta">Alta</option><option value="media" selected>Media</option><option value="baja">Baja</option>
+        </select>
+        <button class="primary" id="addTask">Agregar</button>
+      </div>
+      <div class="toolbar">
+        <button id="viewList">Lista</button>
+        <button id="viewGrid">Cuadrícula</button>
+      </div>
+      <div class="tasks" id="taskList"></div>
+    </section>
+
+    <!-- NOTAS -->
+    <section class="view" id="notes">
+      <h1>Notas</h1>
+      <p class="sub">Ideas y recordatorios rápidos.</p>
+      <div class="toolbar"><button class="primary" id="addNote">+ Nota</button></div>
+      <div class="notes" id="noteList"></div>
+    </section>
+
+    <!-- ASISTENTE -->
+    <section class="view" id="assistant">
+      <h1>Asistente</h1>
+      <p class="sub">Escribe en lenguaje natural.</p>
+      <div class="chat">
+        <div class="log" id="log"></div>
+        <div class="form wide" style="grid-template-columns: 1fr auto; margin:0">
+          <input id="aiInput" placeholder="Ej: agenda dentista 2026-10-20 10:00">
+          <button class="primary" id="aiSend">Enviar</button>
+        </div>
+        <p class="hint">Comandos: "agenda [título] [AAAA-MM-DD] [HH:MM]", "pendientes", "ayuda".
+          La IA completa (Claude) se conectará en la siguiente fase, junto con las cuentas.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Acceso -->
+<div class="auth" id="authScreen">
+  <form class="auth-box" id="authForm">
+    <div class="brand">Mi organización</div>
+    <h2 id="authTitle">Inicia sesión</h2>
+    <input id="authEmail" type="email" placeholder="Correo" autocomplete="email" required>
+    <input id="authPass" type="password" placeholder="Contraseña (mín. 6 caracteres)" autocomplete="current-password" minlength="6" required>
+    <div class="auth-err" id="authErr"></div>
+    <button class="primary" type="submit" id="authSubmit">Entrar</button>
+    <button type="button" class="switch" id="authToggle">¿No tienes cuenta? Regístrate</button>
+  </form>
+</div>
+
+<!-- Modal de evento -->
+<div class="modal" id="eventModal">
+  <div class="box">
+    <h2>Nuevo evento</h2>
+    <input id="evTitle" placeholder="Título">
+    <input id="evDate" type="date">
+    <div class="fld">Hora (opcional)<div class="tpick" id="evTimeBox"></div></div>
+    <select id="evColor">
+      <option value="#c9b8ff">Trabajo</option>
+      <option value="#a8e6cf">Salud</option>
+      <option value="#ffd6a5">Casa</option>
+      <option value="#ffadad">Personal</option>
+    </select>
+    <div style="display:flex; gap:10px; justify-content:flex-end">
+      <button id="evCancel">Cancelar</button>
+      <button class="primary" id="evSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de edición de hábito -->
+<div class="modal" id="habitModal">
+  <div class="box">
+    <h2>Editar hábito</h2>
+    <input id="ehTitle" placeholder="Nombre del hábito">
+    <div class="fld">Inicio<div class="tpick" id="ehStartBox"></div></div>
+    <div class="fld">Fin<div class="tpick" id="ehEndBox"></div></div>
+    <div class="days" id="ehDays"></div>
+    <div style="display:flex; gap:10px; justify-content:flex-end">
+      <button id="ehCancel">Cancelar</button>
+      <button class="primary" id="ehSave">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  // ---------- Almacenamiento local (sin cuentas por ahora) ----------
+  const TOKEN_KEY = "ov-token";
+  const empty = { events: [], tasks: [], notes: [], habits: [] };
+  let data = { ...empty };
+  let token = localStorage.getItem(TOKEN_KEY) || ""; // la sesión se recuerda en este navegador
+  let saveTimer = null;
+
+  function authHeaders() {
+    return { "Content-Type": "application/json", Authorization: "Bearer " + token };
+  }
+  // Guarda en el servidor poco después del último cambio
+  function save() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      fetch("/api/data", { method: "PUT", headers: authHeaders(), body: JSON.stringify(data) })
+        .catch(() => { /* sin conexión: se reintentará con el siguiente cambio */ });
+    }, 400);
+  }
+  const uid = () => Math.random().toString(36).slice(2, 9);
+  const pad = n => String(n).padStart(2, "0");
+  const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const AREA_COLORS = { Trabajo: "#c9b8ff", Salud: "#a8e6cf", Casa: "#ffd6a5", Personal: "#ffadad" };
+
+  // ---------- Navegación ----------
+  const views = document.querySelectorAll(".view");
+  document.querySelectorAll(".nav button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("active", b === btn));
+      views.forEach(v => v.classList.toggle("active", v.id === btn.dataset.view));
+      if (btn.dataset.view === "today") renderToday();
+    });
+  });
+
+  // ---------- Calendario ----------
+  let cursor = new Date(); cursor.setDate(1);
+  const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  const DOW = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+
+  function renderCalendar() {
+    document.getElementById("monthTitle").textContent = `${MESES[cursor.getMonth()]} ${cursor.getFullYear()}`;
+    const cal = document.getElementById("cal");
+    cal.innerHTML = "";
+    DOW.forEach(d => { const el = document.createElement("div"); el.className = "dow"; el.textContent = d; cal.appendChild(el); });
+
+    const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+    const offset = (first.getDay() + 6) % 7; // lunes = 0
+    const start = new Date(first); start.setDate(first.getDate() - offset);
+    const todayKey = iso(new Date());
+
+    for (let i = 0; i < 42; i++) {
+      const d = new Date(start); d.setDate(start.getDate() + i);
+      const key = iso(d);
+      const cell = document.createElement("div");
+      cell.className = "day";
+      if (d.getMonth() !== cursor.getMonth()) cell.classList.add("other");
+      if (key === todayKey) cell.classList.add("today");
+      const num = document.createElement("span");
+      num.className = "num"; num.textContent = d.getDate();
+      cell.appendChild(num);
+
+      data.events.filter(e => e.date === key).sort((a, b) => (a.time || "").localeCompare(b.time || "")).forEach(e => {
+        const ev = document.createElement("div");
+        ev.className = "ev";
+        ev.style.background = e.color;
+        ev.textContent = (e.time ? e.time + " " : "") + e.title;
+        ev.title = "Clic para eliminar";
+        ev.addEventListener("click", ex => {
+          ex.stopPropagation();
+          if (confirm(`¿Eliminar "${e.title}"?`)) { data.events = data.events.filter(x => x.id !== e.id); save(); renderCalendar(); }
+        });
+        cell.appendChild(ev);
+      });
+
+      cell.addEventListener("click", () => openEventModal(key));
+      cal.appendChild(cell);
+    }
+  }
+
+  document.getElementById("prevMonth").onclick = () => { cursor.setMonth(cursor.getMonth() - 1); renderCalendar(); };
+  document.getElementById("nextMonth").onclick = () => { cursor.setMonth(cursor.getMonth() + 1); renderCalendar(); };
+  document.getElementById("todayBtn").onclick = () => { cursor = new Date(); cursor.setDate(1); renderCalendar(); };
+
+  // ---------- Modal de evento ----------
+  const modal = document.getElementById("eventModal");
+  function openEventModal(dateKey) {
+    document.getElementById("evTitle").value = "";
+    document.getElementById("evDate").value = dateKey || iso(new Date());
+    evTime.reset();
+    modal.classList.add("open");
+    document.getElementById("evTitle").focus();
+  }
+  document.getElementById("newEventBtn").onclick = () => openEventModal();
+  document.getElementById("evCancel").onclick = () => modal.classList.remove("open");
+  document.getElementById("evSave").onclick = () => {
+    const title = document.getElementById("evTitle").value.trim();
+    const date = document.getElementById("evDate").value;
+    const time = evTime.get();
+    if (!title || !date) return;
+    if (time === null) { alert("Si pones una hora, elige también los minutos (y al revés)."); return; }
+    data.events.push({
+      id: uid(), title, date,
+      time,
+      color: document.getElementById("evColor").value
+    });
+    save(); modal.classList.remove("open"); renderCalendar();
+  };
+
+  // ---------- Tareas ----------
+  let taskView = "list";
+  function renderTasks() {
+    const list = document.getElementById("taskList");
+    list.className = "tasks" + (taskView === "grid" ? " grid" : "");
+    list.innerHTML = "";
+    const order = { alta: 0, media: 1, baja: 2 };
+    [...data.tasks].sort((a, b) => (a.done - b.done) || (order[a.priority] - order[b.priority]))
+      .forEach(t => {
+        const card = document.createElement("div");
+        card.className = "task" + (t.done ? " done" : "");
+        card.innerHTML = `
+          <div class="t"></div>
+          <div class="meta"><span class="tag"></span><span class="tag"></span><span class="date"></span></div>
+          <div class="actions"><button class="toggle"></button><button class="del">Eliminar</button></div>`;
+        card.querySelector(".t").textContent = t.title;
+        const tags = card.querySelectorAll(".tag");
+        tags[0].textContent = t.area;
+        tags[1].textContent = "Prioridad " + t.priority;
+        card.querySelector(".date").textContent = t.date ? "📅 " + t.date : "";
+        card.querySelector(".toggle").textContent = t.done ? "Reabrir" : "Completar";
+        card.querySelector(".toggle").onclick = () => { t.done = !t.done; save(); renderTasks(); };
+        card.querySelector(".del").onclick = () => { data.tasks = data.tasks.filter(x => x.id !== t.id); save(); renderTasks(); };
+        list.appendChild(card);
+      });
+    if (!data.tasks.length) list.innerHTML = '<p class="sub">Sin tareas todavía.</p>';
+  }
+  function addTask(title, area, date, priority) {
+    if (!title) return;
+    data.tasks.push({ id: uid(), title, area: area || "Personal", date: date || "", priority: priority || "media", done: false });
+    save(); renderTasks();
+  }
+  document.getElementById("addTask").onclick = () => {
+    addTask(
+      document.getElementById("taskTitle").value.trim(),
+      document.getElementById("taskArea").value,
+      document.getElementById("taskDate").value,
+      document.getElementById("taskPriority").value
+    );
+    document.getElementById("taskTitle").value = "";
+  };
+  document.getElementById("viewList").onclick = () => { taskView = "list"; renderTasks(); };
+  document.getElementById("viewGrid").onclick = () => { taskView = "grid"; renderTasks(); };
+
+  // ---------- Notas ----------
+  function renderNotes() {
+    const list = document.getElementById("noteList");
+    list.innerHTML = "";
+    data.notes.forEach(n => {
+      const card = document.createElement("div");
+      card.className = "note";
+      card.innerHTML = '<textarea></textarea><div class="foot"><button>Borrar</button></div>';
+      const ta = card.querySelector("textarea");
+      ta.value = n.text;
+      ta.addEventListener("input", () => { n.text = ta.value; save(); });
+      card.querySelector("button").onclick = () => { data.notes = data.notes.filter(x => x.id !== n.id); save(); renderNotes(); };
+      list.appendChild(card);
+    });
+    if (!data.notes.length) list.innerHTML = '<p class="sub">Sin notas todavía.</p>';
+  }
+  document.getElementById("addNote").onclick = () => { data.notes.unshift({ id: uid(), text: "" }); save(); renderNotes(); };
+
+  // ---------- Asistente (local, por reglas) ----------
+  const log = document.getElementById("log");
+  function bubble(text, who) {
+    const m = document.createElement("div");
+    m.className = "msg " + who;
+    m.textContent = text;
+    log.appendChild(m);
+    log.scrollTop = log.scrollHeight;
+  }
+  function assistant(input) {
+    const text = input.trim();
+    const lower = text.toLowerCase();
+    if (lower === "ayuda") {
+      return 'Puedo: "agenda [título] [AAAA-MM-DD] [HH:MM]" para crear un evento, o "pendientes" para ver tus tareas abiertas.';
+    }
+    if (lower === "pendientes") {
+      const open = data.tasks.filter(t => !t.done);
+      return open.length ? "Tienes " + open.length + " pendientes: " + open.map(t => t.title).join(", ") + "." : "No tienes pendientes. ¡Buen trabajo!";
+    }
+    const m = text.match(/^agenda\s+(.+?)\s+(\d{4}-\d{2}-\d{2})(?:\s+(\d{1,2}:\d{2}))?$/i);
+    if (m) {
+      data.events.push({ id: uid(), title: m[1], date: m[2], time: m[3] || "", color: AREA_COLORS.Personal });
+      save(); renderCalendar();
+      return `Listo: "${m[1]}" agendado el ${m[2]}${m[3] ? " a las " + m[3] : ""}.`;
+    }
+    return 'No entendí. Escribe "ayuda" para ver los comandos disponibles.';
+  }
+  function sendAI() {
+    const input = document.getElementById("aiInput");
+    if (!input.value.trim()) return;
+    bubble(input.value, "me");
+    bubble(assistant(input.value), "ai");
+    input.value = "";
+  }
+  document.getElementById("aiSend").onclick = sendAI;
+  document.getElementById("aiInput").addEventListener("keydown", e => { if (e.key === "Enter") sendAI(); });
+  bubble('Hola. Escribe "ayuda" para ver lo que puedo hacer.', "ai");
+
+  // ---------- Hora escrita (HH:MM) ----------
+  // Acepta "830", "8:30", "08:30", "9", "1405". Devuelve "HH:MM", "" si está vacío, o null si no es válida.
+  function parseTime(s) {
+    const d = (s || "").replace(/\D/g, "");
+    if (!d) return "";
+    const h = d.length <= 2 ? +d : +d.slice(0, -2);
+    const m = d.length <= 2 ? 0 : +d.slice(-2);
+    if (h > 23 || m > 59) return null;
+    return pad(h) + ":" + pad(m);
+  }
+  // Selector de hora con dos apartados: horas y minutos. get() devuelve "HH:MM", "" si está vacío, o null si está a medias.
+  function timePicker(box) {
+    const h = document.createElement("select");
+    const m = document.createElement("select");
+    let hs = '<option value="">Hora</option>';
+    for (let i = 0; i < 24; i++) hs += `<option value="${pad(i)}">${pad(i)}</option>`;
+    let ms = '<option value="">Min</option>';
+    for (let i = 0; i < 60; i += 5) ms += `<option value="${pad(i)}">${pad(i)}</option>`;
+    h.innerHTML = hs;
+    m.innerHTML = ms;
+    const sep = document.createElement("span");
+    sep.className = "sep";
+    sep.textContent = ":";
+    box.append(h, sep, m);
+    return {
+      get() {
+        if (!h.value && !m.value) return "";
+        if (h.value && m.value) return h.value + ":" + m.value;
+        return null;
+      },
+      reset() { h.value = ""; m.value = ""; },
+      set(v) {
+        if (!v) { h.value = ""; m.value = ""; return; }
+        const [a, b] = v.split(":");
+        const mm = b || "00";
+        // Si el hábito antiguo tiene minutos sueltos (ej. 07:37), los agregamos para no perderlos
+        if (![...m.options].some(o => o.value === mm)) m.add(new Option(mm, mm));
+        h.value = a; m.value = mm;
+      }
+    };
+  }
+  const hStart = timePicker(document.getElementById("hTimeBox"));
+  const hEnd = timePicker(document.getElementById("hEndBox"));
+  const evTime = timePicker(document.getElementById("evTimeBox"));
+
+  // ---------- Hábitos recurrentes ----------
+  const DAYS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+  const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
+  let formDays = [0, 1, 2, 3, 4, 5, 6];
+
+  function renderDayChips() {
+    const box = document.getElementById("hDays");
+    box.innerHTML = "";
+    WEEK_ORDER.forEach(d => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip" + (formDays.includes(d) ? " on" : "");
+      b.textContent = DAYS[d];
+      b.onclick = () => {
+        formDays = formDays.includes(d) ? formDays.filter(x => x !== d) : [...formDays, d];
+        renderDayChips();
+      };
+      box.appendChild(b);
+    });
+  }
+  function daysLabel(days) {
+    if (days.length === 7) return "Todos los días";
+    if (!days.length) return "Sin días";
+    return WEEK_ORDER.filter(d => days.includes(d)).map(d => DAYS[d]).join(", ");
+  }
+  function renderHabitList() {
+    const list = document.getElementById("habitList");
+    list.innerHTML = "";
+    data.habits.forEach(h => {
+      const row = document.createElement("div");
+      row.className = "habit-row";
+      row.innerHTML = '<div><div class="t"></div><div class="meta"></div></div><div class="acts"><button class="edit">Editar</button><button class="del">Eliminar</button></div>';
+      row.querySelector(".edit").onclick = () => openHabitEdit(h);
+      row.querySelector(".t").textContent = h.title;
+      const range = h.time ? h.time + (h.end ? " – " + h.end : "") + " · " : "";
+      row.querySelector(".meta").textContent = range + daysLabel(h.days);
+      row.querySelector(".del").onclick = () => {
+        data.habits = data.habits.filter(x => x.id !== h.id); save(); renderHabitList(); renderToday();
+      };
+      list.appendChild(row);
+    });
+    if (!data.habits.length) list.innerHTML = '<p class="sub">Aún no tienes hábitos. Agrega el primero arriba.</p>';
+  }
+  function addHabit() {
+    const title = document.getElementById("hTitle").value.trim();
+    const start = hStart.get();
+    const end = hEnd.get();
+    if (!title || !formDays.length) return;
+    if (start === null || end === null) {
+      alert("Si pones una hora, elige también los minutos (y al revés).");
+      return;
+    }
+    if (start && end && end <= start) {
+      alert("La hora de fin debe ser posterior a la de inicio.");
+      return;
+    }
+    data.habits.push({ id: uid(), title, time: start, end, days: [...formDays], logs: {} });
+    save();
+    document.getElementById("hTitle").value = "";
+    hStart.reset();
+    hEnd.reset();
+    renderHabitList(); renderToday();
+  }
+  // ---------- Editar hábito existente ----------
+  const habitModal = document.getElementById("habitModal");
+  const ehStart = timePicker(document.getElementById("ehStartBox"));
+  const ehEnd = timePicker(document.getElementById("ehEndBox"));
+  let editingId = null;
+  let editDays = [];
+
+  function renderEditDays() {
+    const box = document.getElementById("ehDays");
+    box.innerHTML = "";
+    WEEK_ORDER.forEach(d => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip" + (editDays.includes(d) ? " on" : "");
+      b.textContent = DAYS[d];
+      b.onclick = () => {
+        editDays = editDays.includes(d) ? editDays.filter(x => x !== d) : [...editDays, d];
+        renderEditDays();
+      };
+      box.appendChild(b);
+    });
+  }
+  function openHabitEdit(h) {
+    editingId = h.id;
+    document.getElementById("ehTitle").value = h.title;
+    ehStart.set(h.time);
+    ehEnd.set(h.end);
+    editDays = [...h.days];
+    renderEditDays();
+    habitModal.classList.add("open");
+  }
+  document.getElementById("ehCancel").onclick = () => habitModal.classList.remove("open");
+  document.getElementById("ehSave").onclick = () => {
+    const h = data.habits.find(x => x.id === editingId);
+    const title = document.getElementById("ehTitle").value.trim();
+    const start = ehStart.get();
+    const end = ehEnd.get();
+    if (!h || !title || !editDays.length) return;
+    if (start === null || end === null) {
+      alert("Si pones una hora, elige también los minutos (y al revés).");
+      return;
+    }
+    if (start && end && end <= start) {
+      alert("La hora de fin debe ser posterior a la de inicio.");
+      return;
+    }
+    h.title = title;
+    h.time = start;
+    h.end = end;
+    h.days = [...editDays];
+    save();
+    habitModal.classList.remove("open");
+    renderHabitList();
+    renderToday();
+  };
+
+  document.getElementById("addHabit").onclick = addHabit;
+  document.getElementById("hTitle").addEventListener("keydown", e => { if (e.key === "Enter") addHabit(); });
+
+  // ---------- Hoy ----------
+  function renderToday() {
+    const now = new Date();
+    const key = iso(now);
+    const hour = now.getHours();
+    const greet = hour < 12 ? "Buenos días" : hour < 19 ? "Buenas tardes" : "Buenas noches";
+    document.getElementById("todayDate").textContent = now.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" });
+    document.getElementById("todayGreet").textContent = greet + ".";
+
+    // Hábitos de hoy
+    const habits = data.habits.filter(h => h.days.includes(now.getDay()))
+      .sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+    const doneCount = habits.filter(h => h.logs[key]).length;
+    const pct = habits.length ? Math.round(doneCount / habits.length * 100) : 0;
+    document.getElementById("progressBar").style.width = pct + "%";
+    document.getElementById("progressText").textContent =
+      habits.length ? `${doneCount} de ${habits.length} hábitos` : "Sin hábitos para hoy";
+
+    const hl = document.getElementById("todayHabits");
+    hl.innerHTML = "";
+    habits.forEach(h => {
+      const done = !!h.logs[key];
+      const row = document.createElement("button");
+      row.className = "habit-check" + (done ? " done" : "");
+      row.innerHTML = '<span class="box"></span><span class="name"></span><span class="time"></span>';
+      row.querySelector(".box").textContent = done ? "✓" : "";
+      row.querySelector(".name").textContent = h.title;
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+      const toMin = t => { const [hh, mm] = t.split(":").map(Number); return hh * 60 + mm; };
+      const inWindow = h.time && h.end && nowMin >= toMin(h.time) && nowMin < toMin(h.end);
+      if (inWindow && !done) row.classList.add("now");
+      row.querySelector(".time").textContent = h.time ? h.time + (h.end ? " – " + h.end : "") : "";
+      if (inWindow && !done) {
+        const tag = document.createElement("span");
+        tag.className = "tag-now";
+        tag.textContent = "En curso";
+        row.appendChild(tag);
+      }
+      row.onclick = () => { h.logs[key] = !done; save(); renderToday(); };
+      hl.appendChild(row);
+    });
+    if (!habits.length) hl.innerHTML = '<p class="sub">No hay hábitos programados para hoy.</p>';
+
+    // Agenda de hoy
+    const ev = document.getElementById("todayEvents");
+    ev.innerHTML = "";
+    const minOf = t => { const [hh, mm] = t.split(":").map(Number); return hh * 60 + mm; };
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const todays = data.events.filter(e => e.date === key)
+      .sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99"));
+    const nextEv = todays.find(e => e.time && minOf(e.time) >= nowMinutes);
+    todays.forEach(e => {
+      const isPast = e.time && minOf(e.time) < nowMinutes;
+      const row = document.createElement("div");
+      row.className = "agenda-row" + (e === nextEv ? " next" : "") + (isPast ? " past" : "");
+      row.style.setProperty("--c", e.color);
+      row.innerHTML = '<span class="badge"></span><div class="info"><div class="name"></div><div class="sub2"></div></div>';
+      row.querySelector(".badge").textContent = e.time || "Todo el día";
+      row.querySelector(".name").textContent = e.title;
+      row.querySelector(".sub2").textContent = e === nextEv ? "⏰ Próximo" : (isPast ? "Ya pasó" : "");
+      ev.appendChild(row);
+    });
+    if (!ev.children.length) ev.innerHTML = '<p class="sub">Nada agendado hoy.</p>';
+
+    // Tareas de hoy
+    const tl = document.getElementById("todayTasks");
+    tl.innerHTML = "";
+    data.tasks.filter(t => t.date === key && !t.done).forEach(t => {
+      const row = document.createElement("div");
+      row.className = "agenda-row";
+      row.style.setProperty("--c", AREA_COLORS[t.area] || "#e8e8ea");
+      row.innerHTML = '<span class="badge"></span><div class="info"><div class="name"></div><div class="sub2"></div></div>';
+      row.querySelector(".badge").textContent = t.area;
+      row.querySelector(".name").textContent = t.title;
+      row.querySelector(".sub2").textContent = "Tarea" + (t.priority === "alta" ? " · prioridad alta" : "");
+      tl.appendChild(row);
+    });
+    if (!tl.children.length) tl.innerHTML = '<p class="sub">Sin tareas para hoy.</p>';
+  }
+
+  // ---------- Scroll más suave con la rueda ----------
+  const mainEl = document.querySelector("main");
+  mainEl.addEventListener("wheel", e => {
+    if (e.ctrlKey) return; // zoom del navegador
+    e.preventDefault();
+    const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? mainEl.clientHeight : 1;
+    mainEl.scrollBy({ top: e.deltaY * unit * 0.4, behavior: "smooth" });
+  }, { passive: false });
+
+  // ---------- Cuentas ----------
+  function renderEverything() {
+    renderCalendar(); renderTasks(); renderNotes(); renderDayChips(); renderHabitList(); renderToday();
+  }
+  const authScreen = document.getElementById("authScreen");
+  const authForm = document.getElementById("authForm");
+  const authErr = document.getElementById("authErr");
+  let authMode = "login";
+
+  function showAuth() {
+    authScreen.classList.add("open");
+    document.body.classList.add("locked");
+  }
+  function hideAuth() {
+    authScreen.classList.remove("open");
+    document.body.classList.remove("locked");
+    authErr.textContent = "";
+  }
+  async function loadData() {
+    const res = await fetch("/api/data", { headers: authHeaders() });
+    if (res.status === 401) {
+      token = ""; localStorage.removeItem(TOKEN_KEY);
+      return false;
+    }
+    if (!res.ok) throw new Error("server");
+    data = Object.assign({}, empty, await res.json());
+    return true;
+  }
+  async function boot() {
+    if (!token) { showAuth(); return; }
+    try {
+      if (await loadData()) { hideAuth(); renderEverything(); }
+      else showAuth();
+    } catch (e) {
+      showAuth();
+      authErr.textContent = "No hay conexión con el servidor. Intenta de nuevo.";
+    }
+  }
+
+  document.getElementById("authToggle").onclick = () => {
+    authMode = authMode === "login" ? "register" : "login";
+    document.getElementById("authTitle").textContent = authMode === "login" ? "Inicia sesión" : "Crea tu cuenta";
+    document.getElementById("authSubmit").textContent = authMode === "login" ? "Entrar" : "Registrarme";
+    document.getElementById("authToggle").textContent = authMode === "login"
+      ? "¿No tienes cuenta? Regístrate" : "¿Ya tienes cuenta? Inicia sesión";
+    authErr.textContent = "";
+  };
+
+  authForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    const email = document.getElementById("authEmail").value.trim();
+    const password = document.getElementById("authPass").value;
+    authErr.textContent = "";
+    try {
+      const res = await fetch(authMode === "login" ? "/api/login" : "/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) { authErr.textContent = body.error || "No se pudo entrar."; return; }
+      token = body.token;
+      localStorage.setItem(TOKEN_KEY, token);
+      await loadData();
+      hideAuth();
+      renderEverything();
+      document.getElementById("authPass").value = "";
+    } catch (err) {
+      authErr.textContent = "No hay conexión con el servidor.";
+    }
+  });
+
+  document.getElementById("logoutBtn").onclick = () => {
+    fetch("/api/logout", { method: "POST", headers: authHeaders() }).catch(() => {});
+    token = ""; localStorage.removeItem(TOKEN_KEY);
+    data = { ...empty };
+    renderEverything();
+    showAuth();
+  };
+
+  boot();
+})();
+</script>
+</body>
+</html>

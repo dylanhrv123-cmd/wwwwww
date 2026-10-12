@@ -1,0 +1,9 @@
+{
+  "name": "organizacion-vida",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Web de organización de vida con cuentas y datos en la nube",
+  "dependencies": {
+    "@netlify/blobs": "^8.0.0"
+  }
+}
