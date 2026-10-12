@@ -292,7 +292,7 @@
           <button class="primary" id="aiSend">Enviar</button>
         </div>
         <p class="hint">Comandos: "agenda [título] [AAAA-MM-DD] [HH:MM]", "pendientes", "ayuda".
-          La IA completa (Claude) se conectará en la siguiente fase, junto con las cuentas.</p>
+          Puedes escribir en lenguaje natural, por ejemplo: "agenda gym los martes a las 7" o "¿qué tengo hoy?".</p>
       </div>
     </section>
   </main>
@@ -544,12 +544,62 @@
     }
     return 'No entendí. Escribe "ayuda" para ver los comandos disponibles.';
   }
-  function sendAI() {
+  // Aplica lo que decide la IA: crear eventos, tareas o hábitos
+  function applyActions(actions) {
+    let changed = false;
+    actions.forEach(a => {
+      if (a.type === "add_event" && a.title && a.date) {
+        data.events.push({ id: uid(), title: a.title, date: a.date, time: a.time || "", color: AREA_COLORS.Personal });
+        changed = true;
+      } else if (a.type === "add_task" && a.title) {
+        data.tasks.push({
+          id: uid(), title: a.title,
+          area: AREA_COLORS[a.area] ? a.area : "Personal",
+          date: a.date || "",
+          priority: ["alta", "media", "baja"].includes(a.priority) ? a.priority : "media",
+          done: false
+        });
+        changed = true;
+      } else if (a.type === "add_habit" && a.title && Array.isArray(a.days) && a.days.length) {
+        data.habits.push({
+          id: uid(), title: a.title, time: a.time || "", end: a.end || "",
+          days: a.days.filter(d => Number.isInteger(d) && d >= 0 && d <= 6), logs: {}
+        });
+        changed = true;
+      }
+    });
+    if (changed) { save(); renderEverything(); }
+  }
+
+  async function sendAI() {
     const input = document.getElementById("aiInput");
-    if (!input.value.trim()) return;
-    bubble(input.value, "me");
-    bubble(assistant(input.value), "ai");
+    const text = input.value.trim();
+    if (!text) return;
+    bubble(text, "me");
     input.value = "";
+
+    const thinking = document.createElement("div");
+    thinking.className = "msg ai";
+    thinking.textContent = "Pensando…";
+    log.appendChild(thinking);
+    log.scrollTop = log.scrollHeight;
+
+    try {
+      const res = await fetch("/api/ai", {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ message: text, today: iso(new Date()), data })
+      });
+      const body = await res.json().catch(() => ({}));
+      thinking.remove();
+      if (!res.ok) { bubble(body.error || ("No pude responder (código " + res.status + ")."), "ai"); return; }
+      bubble(body.reply || "Listo.", "ai");
+      applyActions(body.actions || []);
+    } catch (e) {
+      // Sin conexión con la IA: usamos los comandos locales como respaldo
+      thinking.remove();
+      bubble(assistant(text), "ai");
+    }
   }
   document.getElementById("aiSend").onclick = sendAI;
   document.getElementById("aiInput").addEventListener("keydown", e => { if (e.key === "Enter") sendAI(); });
