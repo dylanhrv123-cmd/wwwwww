@@ -19,6 +19,10 @@ const validEmail = (e) => typeof e === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.
 // se muestre en la pantalla con su mensaje en lugar de un 502.
 function store() {
   const { getStore } = require("@netlify/blobs");
+  const siteID = process.env.BLOBS_SITE_ID;
+  const token = process.env.BLOBS_TOKEN;
+  // Si las variables existen, se usan directamente; si no, Netlify intenta configurarlo solo.
+  if (siteID && token) return getStore({ name: "organizacion-vida", siteID, token });
   return getStore("organizacion-vida");
 }
 
