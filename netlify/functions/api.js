@@ -1,7 +1,5 @@
 const crypto = require("crypto");
-const { getStore } = require("@netlify/blobs");
 
-const st = getStore("organizacion-vida");
 const SESSION_DAYS = 30;
 const EMPTY = { events: [], tasks: [], notes: [], habits: [] };
 
@@ -17,6 +15,13 @@ const parseBody = (event) => {
 
 const validEmail = (e) => typeof e === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
+// La base de datos se abre solo cuando se necesita, para que un error aquí
+// se muestre en la pantalla con su mensaje en lugar de un 502.
+function store() {
+  const { getStore } = require("@netlify/blobs");
+  return getStore("organizacion-vida");
+}
+
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString("hex");
   const hash = crypto.scryptSync(password, salt, 64).toString("hex");
@@ -29,7 +34,7 @@ function checkPassword(password, salt, hash) {
   return test.length === real.length && crypto.timingSafeEqual(test, real);
 }
 
-async function newSession(userId) {
+async function newSession(st, userId) {
   const token = crypto.randomBytes(32).toString("hex");
   await st.setJSON(`session:${token}`, {
     userId,
@@ -38,7 +43,7 @@ async function newSession(userId) {
   return { token };
 }
 
-async function getSession(event) {
+async function getSession(st, event) {
   const header = event.headers.authorization || event.headers.Authorization || "";
   const token = header.replace(/^Bearer\s+/i, "");
   if (!token || token.length < 32) return null;
@@ -47,7 +52,6 @@ async function getSession(event) {
   return { token, userId: s.userId };
 }
 
-// Sanitiza los datos que llegan del cliente: solo listas conocidas.
 function cleanData(input) {
   const out = { ...EMPTY };
   for (const key of Object.keys(EMPTY)) {
@@ -61,7 +65,8 @@ exports.handler = async (event) => {
   const method = event.httpMethod;
 
   try {
-    // ---- Registro ----
+    const st = store();
+
     if (path === "/register" && method === "POST") {
       const { email: rawEmail, password } = parseBody(event);
       const email = String(rawEmail || "").trim().toLowerCase();
@@ -77,29 +82,26 @@ exports.handler = async (event) => {
       const { salt, hash } = hashPassword(password);
       await st.setJSON(key, { userId, salt, hash });
       await st.setJSON(`data:${userId}`, EMPTY);
-      return json(200, await newSession(userId));
+      return json(200, await newSession(st, userId));
     }
 
-    // ---- Inicio de sesión ----
     if (path === "/login" && method === "POST") {
       const { email: rawEmail, password } = parseBody(event);
       const email = String(rawEmail || "").trim().toLowerCase();
       const u = await st.get(`user:${email}`, { type: "json" });
       if (!u || typeof password !== "string" || !checkPassword(password, u.salt, u.hash))
         return json(401, { error: "Correo o contraseña incorrectos." });
-      return json(200, await newSession(u.userId));
+      return json(200, await newSession(st, u.userId));
     }
 
-    // ---- Cerrar sesión ----
     if (path === "/logout" && method === "POST") {
-      const s = await getSession(event);
+      const s = await getSession(st, event);
       if (s) await st.delete(`session:${s.token}`);
       return json(200, { ok: true });
     }
 
-    // ---- Datos del usuario ----
     if (path === "/data") {
-      const s = await getSession(event);
+      const s = await getSession(st, event);
       if (!s) return json(401, { error: "Sesión no válida." });
 
       if (method === "GET") {
@@ -107,15 +109,14 @@ exports.handler = async (event) => {
         return json(200, d || EMPTY);
       }
       if (method === "PUT") {
-        const clean = cleanData(parseBody(event));
-        await st.setJSON(`data:${s.userId}`, clean);
+        await st.setJSON(`data:${s.userId}`, cleanData(parseBody(event)));
         return json(200, { ok: true });
       }
     }
 
-    return json(404, { error: "Ruta no encontrada." });
+    return json(404, { error: "Ruta no encontrada: " + path });
   } catch (err) {
     console.error(err);
-    return json(500, { error: "Error del servidor. Intenta de nuevo." });
+    return json(500, { error: "Error del servidor: " + (err && err.message ? err.message : String(err)) });
   }
 };
