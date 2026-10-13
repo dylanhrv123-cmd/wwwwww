@@ -300,6 +300,101 @@
   .factions { display: flex; gap: 8px; flex-wrap: wrap; }
   .factions button { font-size: 13px; padding: 6px 12px; }
 
+  /* Amigos: alineación fija de tarjetas, botones y campo de búsqueda */
+  #friends .flist { max-width: 720px; }
+  #friends .fcard { display: grid; grid-template-columns: 46px minmax(0, 1fr) auto; align-items: center; gap: 14px; }
+  #friends .factions { justify-content: flex-end; flex-wrap: nowrap; }
+  #friends .factions button { white-space: nowrap; height: 34px; padding: 0 14px; }
+  #friends .goal-add { align-items: stretch; }
+  #friends .goal-add input, #friends .goal-add button { height: 42px; }
+  #friends .goal-add button { white-space: nowrap; padding: 0 18px; }
+  #friends .sub { margin: 0 0 22px; }
+  #friends .fcard + .fcard { margin-top: 0; }
+  @media (max-width: 760px) {
+    #friends .fcard { grid-template-columns: 46px minmax(0, 1fr); }
+    #friends .factions { grid-column: 1 / -1; justify-content: flex-start; }
+  }
+
+  /* Perfil de amigo: que todo quepa dentro del panel */
+  #fDetail { max-width: 720px; box-sizing: border-box; display: grid; gap: 14px; }
+  #fDetail > * { min-width: 0; max-width: 100%; box-sizing: border-box; }
+  #fDetail .fcard { grid-template-columns: 46px minmax(0, 1fr); }
+  #fDetail .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: none; margin: 0; }
+  #fDetail .stat { min-width: 0; }
+  #fDetail > button { width: 100%; margin: 0; }
+
+  /* Ajustes para celular */
+  @media (max-width: 760px) {
+    .pbubble { top: 12px; right: 12px; padding: 4px; }
+    .pbubble.named { padding: 4px 4px 4px 12px; }
+    .pbubble .pav { width: 34px; height: 34px; font-size: 13px; }
+    .pname { max-width: 110px; font-size: 13px; }
+    main { padding: 22px 16px 90px; }
+    h1 { font-size: 34px; }
+    .sub { font-size: 14px; }
+    .toolbar { gap: 8px; }
+    .seg { flex-wrap: wrap; border-radius: 16px; }
+    .seg button { padding: 6px 10px; font-size: 13px; }
+    .prof-card { padding: 18px; }
+    .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .stat .sv { font-size: 22px; }
+    .cal .day { min-height: 64px; }
+    .srow { flex-direction: column; align-items: flex-start; }
+    .codecard { flex-direction: column; align-items: flex-start; }
+    .fcard { gap: 10px; }
+  }
+
+  /* Avisos y confirmaciones */
+  .toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 16px); opacity: 0; z-index: 90;
+    background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 999px;
+    padding: 10px 18px; font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.35); pointer-events: none;
+    transition: opacity .3s ease, transform .3s ease; max-width: calc(100vw - 32px); text-align: center; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .cbox { max-width: 360px; }
+  .cmsg { margin: 0; font-size: 16px; line-height: 1.5; }
+  .cbtns { display: flex; justify-content: flex-end; gap: 10px; }
+  .cbtns .danger { background: #ff8a8a; border-color: #ff8a8a; color: #0b0b0c; }
+  :root.light .cbtns .danger { background: #d9534f; border-color: #d9534f; color: #ffffff; }
+
+  /* Búsqueda y hábitos por semana */
+  .sres { cursor: pointer; }
+  .sres:hover { border-color: var(--pc); }
+  .sicon { font-size: 18px; }
+  .hweek-wrap { margin-bottom: 26px; }
+  .hweek-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .hweek-nav span { flex: 1; text-align: center; color: var(--muted); font-size: 14px; }
+  .hw { display: grid; gap: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 18px;
+    padding: 12px; overflow-x: auto; }
+  .hw-c { font-size: 12px; color: var(--muted); display: flex; align-items: center; justify-content: center; min-height: 30px; }
+  .hw-c.today { color: var(--pc); font-weight: 700; }
+  .hw-name { justify-content: flex-start; color: var(--text); font-size: 14px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hw-off { color: #55555c; }
+  .hw-cell { height: 30px; border-radius: 10px; padding: 0; font-size: 13px; background: var(--bg); border: 1px solid var(--line); }
+  .hw-cell:hover:not(:disabled) { background: var(--line); }
+  .hw-cell.on { background: var(--pc); color: #0b0b0c; border-color: var(--pc); font-weight: 700; }
+  .hw-cell.on:hover { background: var(--pc); }
+  .hw-cell.today { outline: 1px solid var(--pc); outline-offset: 2px; }
+  .hw-cell:disabled { opacity: .35; cursor: default; }
+  .rem { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+  /* Bienvenida */
+  .obox { max-width: 420px; display: grid; gap: 20px; padding: 26px; }
+  .ob-prog { display: flex; gap: 6px; }
+  .ob-prog span { flex: 1; height: 4px; border-radius: 999px; background: var(--line); transition: background .3s; }
+  .ob-prog span.on { background: var(--pc); }
+  .ob-body { display: grid; gap: 14px; min-height: 150px; align-content: start; }
+  .ob-title { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -.01em; }
+  .ob-q { margin: 0; color: var(--muted); font-size: 15px; }
+  .ob-hint { margin: 0; font-size: 13px; color: var(--muted); }
+  .ob-seg { flex-wrap: wrap; }
+  .ob-seg button { flex: 1; min-width: 110px; padding: 10px 14px; font-size: 15px; }
+  .ob-time { margin-top: 4px; }
+  .ob-photo { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .ob-photo-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  .ob-nav { display: flex; justify-content: space-between; align-items: center; }
+  .ob-skip { background: none; border: none; color: var(--muted); }
+  .ob-skip:hover { color: var(--text); background: none; }
+
   /* Código de amigo */
   .codecard { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
   .codeval { display: flex; gap: 10px; align-items: center; font-weight: 700; font-size: 18px; letter-spacing: .1em; }
@@ -375,6 +470,7 @@
       <button data-view="habits">Hábitos</button>
       <button data-view="tasks">Tareas</button>
       <button data-view="notes">Notas</button>
+      <button data-view="search">Buscar</button>
       <button data-view="friends">Amigos</button>
       <button data-view="assistant">Asistente</button>
     </nav>
@@ -406,6 +502,14 @@
         <div class="fld">Fin<div class="tpick" id="hEndBox"></div></div>
         <button class="primary" id="addHabit">Agregar</button>
         <div class="days" id="hDays"></div>
+      </div>
+      <div class="hweek-wrap">
+        <div class="hweek-nav">
+          <button id="hwPrev">←</button>
+          <span id="hwTitle"></span>
+          <button id="hwNext">→</button>
+        </div>
+        <div id="hweek"></div>
       </div>
       <div id="habitList"></div>
     </section>
@@ -490,6 +594,16 @@
         </div>
         <div class="srow">
           <div>
+            <div class="slabel">Idioma</div>
+            <div class="sdesc">Idioma de la página.</div>
+          </div>
+          <div class="seg" id="setLang">
+            <button data-lang="es">Español</button>
+            <button data-lang="en">English</button>
+          </div>
+        </div>
+        <div class="srow">
+          <div>
             <div class="slabel">Color de acento</div>
             <div class="sdesc">Botones, progreso y detalles de la página.</div>
           </div>
@@ -501,6 +615,30 @@
             <div class="sdesc">Aparecen como bloques punteados en Día y Semana.</div>
           </div>
           <label class="switch"><input type="checkbox" id="setHabits"><span class="knob"></span></label>
+        </div>
+        <div class="srow">
+          <div>
+            <div class="slabel">Recordatorio diario</div>
+            <div class="sdesc">Te avisa a la hora elegida si tienes hábitos pendientes. Funciona mientras la página esté abierta.</div>
+          </div>
+          <div class="rem">
+            <label class="switch"><input type="checkbox" id="setRem"><span class="knob"></span></label>
+            <div class="tpick" id="remTimeBox"></div>
+          </div>
+        </div>
+        <div class="srow">
+          <div>
+            <div class="slabel">Exportar mis datos</div>
+            <div class="sdesc">Descarga tus hábitos, eventos, tareas y notas en un archivo.</div>
+          </div>
+          <button id="exportBtn">Exportar</button>
+        </div>
+        <div class="srow">
+          <div>
+            <div class="slabel">Importar datos</div>
+            <div class="sdesc">Carga un archivo exportado antes. Reemplaza tus datos actuales.</div>
+          </div>
+          <label class="filebtn">Elegir archivo<input type="file" id="importFile" accept="application/json,.json" hidden></label>
         </div>
       </div>
     </section>
@@ -569,6 +707,16 @@
         <div class="hello" id="pPreviewDate"></div>
         <h1 id="pPreviewGreet" style="font-size:34px"></h1>
       </div>
+    </section>
+
+    <!-- BUSCAR -->
+    <section class="view" id="search">
+      <h1>Buscar</h1>
+      <p class="sub">Encuentra eventos, tareas, notas y hábitos desde un solo campo.</p>
+      <div class="prof-card" style="max-width:none">
+        <input id="sQuery" placeholder="Escribe algo, por ejemplo: dentista">
+      </div>
+      <div class="flist" id="sResults" style="max-width:none; margin-top:16px"></div>
     </section>
 
     <!-- AMIGOS -->
@@ -696,6 +844,35 @@
   const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   const AREA_COLORS = { Trabajo: "#c9b8ff", Salud: "#a8e6cf", Casa: "#ffd6a5", Personal: "#ffadad" };
 
+  // ---------- Avisos y confirmaciones dentro de la app ----------
+  function toast(message) {
+    const t = document.createElement("div");
+    t.className = "toast";
+    t.textContent = message;
+    document.body.appendChild(t);
+    requestAnimationFrame(() => t.classList.add("show"));
+    setTimeout(() => {
+      t.classList.remove("show");
+      setTimeout(() => t.remove(), 300);
+    }, 2800);
+  }
+  function askConfirm(message, okText) {
+    return new Promise(resolve => {
+      const wrap = document.createElement("div");
+      wrap.className = "modal open";
+      wrap.innerHTML = '<div class="box cbox"><p class="cmsg"></p>' +
+        '<div class="cbtns"><button class="cancel">Cancelar</button><button class="primary danger"></button></div></div>';
+      wrap.querySelector(".cmsg").textContent = message;
+      wrap.querySelector(".danger").textContent = okText || "Eliminar";
+      const done = val => { wrap.remove(); resolve(val); };
+      wrap.querySelector(".cancel").onclick = () => done(false);
+      wrap.querySelector(".danger").onclick = () => done(true);
+      wrap.addEventListener("click", e => { if (e.target === wrap) done(false); });
+      document.body.appendChild(wrap);
+      wrap.querySelector(".danger").focus();
+    });
+  }
+
   // ---------- Navegación ----------
   const views = document.querySelectorAll(".view");
   document.querySelectorAll(".nav button").forEach(btn => {
@@ -705,6 +882,7 @@
       if (btn.dataset.view === "today") renderToday();
       if (btn.dataset.view === "profile") renderProfileExtras();
       if (btn.dataset.view === "friends") loadFriends();
+      if (btn.dataset.view === "habits") renderHabitWeek();
     });
   });
 
@@ -727,8 +905,8 @@
     if (!isDay) start.setDate(cursor.getDate() - ((cursor.getDay() + 6) % 7)); // lunes
     const end = new Date(start); end.setDate(start.getDate() + count - 1);
     document.getElementById("monthTitle").textContent = isDay
-      ? start.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric" })
-      : start.getDate() + " – " + end.getDate() + " de " + MESES[end.getMonth()] + " " + end.getFullYear();
+      ? start.toLocaleDateString(localeTag(), { weekday: "long", day: "numeric", month: "long", year: "numeric" })
+      : start.getDate() + " – " + end.getDate() + " de " + MESES_T()[end.getMonth()] + " " + end.getFullYear();
 
     const minsOf = t => { const p = t.split(":").map(Number); return p[0] * 60 + p[1]; };
     const todayKey = iso(new Date());
@@ -755,7 +933,7 @@
       const hd = document.createElement("div");
       hd.className = "thead" + (key === todayKey ? " today" : "");
       hd.innerHTML = '<div class="wh"></div><span class="wnum"></span><div class="tall"></div>';
-      hd.querySelector(".wh").textContent = DOW[(d.getDay() + 6) % 7];
+      hd.querySelector(".wh").textContent = DOW_T()[(d.getDay() + 6) % 7];
       hd.querySelector(".wnum").textContent = d.getDate();
       const all = hd.querySelector(".tall");
       if (birthdayOn(key)) {
@@ -772,9 +950,9 @@
         c.style.setProperty("--c", e.color);
         c.textContent = e.title;
         c.title = "Clic para eliminar";
-        c.onclick = ev => {
+        c.onclick = async ev => {
           ev.stopPropagation();
-          if (confirm('¿Eliminar "' + e.title + '"?')) {
+          if (await askConfirm('¿Eliminar "' + e.title + '"?')) {
             data.events = data.events.filter(x => x.id !== e.id); save(); renderCalendar();
           }
         };
@@ -848,9 +1026,9 @@
         b.querySelector(".t").textContent = e.time;
         b.querySelector(".n").textContent = e.title;
         b.title = "Clic para eliminar";
-        b.onclick = ev => {
+        b.onclick = async ev => {
           ev.stopPropagation();
-          if (confirm('¿Eliminar "' + e.title + '"?')) {
+          if (await askConfirm('¿Eliminar "' + e.title + '"?')) {
             data.events = data.events.filter(x => x.id !== e.id); save(); renderCalendar();
           }
         };
@@ -875,7 +1053,7 @@
       card.className = "ymonth";
       const title = document.createElement("button");
       title.className = "ytitle";
-      title.textContent = MESES[m].charAt(0).toUpperCase() + MESES[m].slice(1);
+      title.textContent = MESES_T()[m].charAt(0).toUpperCase() + MESES_T()[m].slice(1);
       title.onclick = () => setCalView("month", new Date(y, m, 1));
       card.appendChild(title);
 
@@ -908,10 +1086,10 @@
   function renderCalendar() {
     if (calView === "week" || calView === "day") { renderWeek(); return; }
     if (calView === "year") { renderYear(); return; }
-    document.getElementById("monthTitle").textContent = `${MESES[cursor.getMonth()]} ${cursor.getFullYear()}`;
+    document.getElementById("monthTitle").textContent = `${MESES_T()[cursor.getMonth()]} ${cursor.getFullYear()}`;
     const cal = document.getElementById("cal");
     cal.innerHTML = "";
-    DOW.forEach(d => { const el = document.createElement("div"); el.className = "dow"; el.textContent = d; cal.appendChild(el); });
+    DOW_T().forEach(d => { const el = document.createElement("div"); el.className = "dow"; el.textContent = d; cal.appendChild(el); });
 
     const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
     const offset = (first.getDay() + 6) % 7; // lunes = 0
@@ -935,9 +1113,9 @@
         ev.style.background = e.color;
         ev.textContent = (e.time ? e.time + " " : "") + e.title;
         ev.title = "Clic para eliminar";
-        ev.addEventListener("click", ex => {
+        ev.addEventListener("click", async ex => {
           ex.stopPropagation();
-          if (confirm(`¿Eliminar "${e.title}"?`)) { data.events = data.events.filter(x => x.id !== e.id); save(); renderCalendar(); }
+          if (await askConfirm(`¿Eliminar "${e.title}"?`)) { data.events = data.events.filter(x => x.id !== e.id); save(); renderCalendar(); }
         });
         cell.appendChild(ev);
       });
@@ -1011,7 +1189,7 @@
     const date = document.getElementById("evDate").value;
     const time = evTime.get();
     if (!title || !date) return;
-    if (time === null) { alert("Si pones una hora, elige también los minutos (y al revés)."); return; }
+    if (time === null) { toast("Si pones una hora, elige también los minutos (y al revés)."); return; }
     data.events.push({
       id: uid(), title, date,
       time,
@@ -1042,7 +1220,10 @@
         card.querySelector(".date").textContent = t.date ? "📅 " + t.date : "";
         card.querySelector(".toggle").textContent = t.done ? "Reabrir" : "Completar";
         card.querySelector(".toggle").onclick = () => { t.done = !t.done; save(); renderTasks(); };
-        card.querySelector(".del").onclick = () => { data.tasks = data.tasks.filter(x => x.id !== t.id); save(); renderTasks(); };
+        card.querySelector(".del").onclick = async () => {
+          if (!(await askConfirm('¿Eliminar la tarea "' + t.title + '"?'))) return;
+          data.tasks = data.tasks.filter(x => x.id !== t.id); save(); renderTasks();
+        };
         list.appendChild(card);
       });
     if (!data.tasks.length) list.innerHTML = '<p class="sub">Sin tareas todavía.</p>';
@@ -1089,7 +1270,10 @@
         dots.appendChild(b);
       });
 
-      card.querySelector(".ndel").onclick = () => {
+      card.querySelector(".ndel").onclick = async () => {
+        const preview = (n.text || "").trim().slice(0, 40);
+        const label = preview ? '"' + preview + (n.text.length > 40 ? "…" : "") + '"' : "esta nota vacía";
+        if (!(await askConfirm("¿Eliminar " + label + "?"))) return;
         data.notes = data.notes.filter(x => x.id !== n.id); save(); renderNotes();
       };
       list.appendChild(card);
@@ -1169,7 +1353,7 @@
       const res = await fetch("/api/ai", {
         method: "POST",
         headers: authHeaders(),
-        body: JSON.stringify({ message: text, today: iso(new Date()), data })
+        body: JSON.stringify({ message: text, today: iso(new Date()), data, lang })
       });
       const body = await res.json().catch(() => ({}));
       thinking.remove();
@@ -1286,7 +1470,8 @@
       row.querySelector(".t").textContent = h.title;
       const range = h.time ? h.time + (h.end ? " – " + h.end : "") + " · " : "";
       row.querySelector(".meta").textContent = range + daysLabel(h.days) + " · " + streakLabel(streakOf(h));
-      row.querySelector(".del").onclick = () => {
+      row.querySelector(".del").onclick = async () => {
+        if (!(await askConfirm('¿Eliminar el hábito "' + h.title + '"? Se perderá su racha.'))) return;
         data.habits = data.habits.filter(x => x.id !== h.id); save(); renderHabitList(); renderToday();
       };
       list.appendChild(row);
@@ -1299,11 +1484,11 @@
     const end = hEnd.get();
     if (!title || !formDays.length) return;
     if (start === null || end === null) {
-      alert("Si pones una hora, elige también los minutos (y al revés).");
+      toast("Si pones una hora, elige también los minutos (y al revés).");
       return;
     }
     if (start && end && end <= start) {
-      alert("La hora de fin debe ser posterior a la de inicio.");
+      toast("La hora de fin debe ser posterior a la de inicio.");
       return;
     }
     data.habits.push({ id: uid(), title, time: start, end, days: [...formDays], logs: {} });
@@ -1352,11 +1537,11 @@
     const end = ehEnd.get();
     if (!h || !title || !editDays.length) return;
     if (start === null || end === null) {
-      alert("Si pones una hora, elige también los minutos (y al revés).");
+      toast("Si pones una hora, elige también los minutos (y al revés).");
       return;
     }
     if (start && end && end <= start) {
-      alert("La hora de fin debe ser posterior a la de inicio.");
+      toast("La hora de fin debe ser posterior a la de inicio.");
       return;
     }
     h.title = title;
@@ -1377,8 +1562,8 @@
     const now = new Date();
     const key = iso(now);
     const hour = now.getHours();
-    const greet = hour < 12 ? "Buenos días" : hour < 19 ? "Buenas tardes" : "Buenas noches";
-    document.getElementById("todayDate").textContent = now.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" });
+    const greet = greetingWord(hour);
+    document.getElementById("todayDate").textContent = now.toLocaleDateString(localeTag(), { weekday: "long", day: "numeric", month: "long" });
     document.getElementById("todayGreet").textContent = greet + (profile.name ? ", " + profile.name : "") + ".";
     document.getElementById("todayMotto").textContent = profile.motto || "";
 
@@ -1478,7 +1663,8 @@
 
   // ---------- Cuentas ----------
   function renderEverything() {
-    renderCalendar(); renderTasks(); renderNotes(); renderDayChips(); renderHabitList(); renderToday();
+    window.__ovReady = true;
+    renderCalendar(); renderTasks(); renderNotes(); renderDayChips(); renderHabitList(); renderToday(); renderHabitWeek();
   }
   const authScreen = document.getElementById("authScreen");
   const authForm = document.getElementById("authForm");
@@ -1511,6 +1697,7 @@
       try { data = Object.assign({}, empty, JSON.parse(localStorage.getItem(DEMO_KEY)) || {}); } catch (e) { data = { ...empty }; }
       hideAuth();
       renderEverything();
+      if (!profile.onboarded) setTimeout(startOnboarding, 300);
       return;
     }
     if (!token) { showAuth(); return; }
@@ -1556,7 +1743,8 @@
     }
   });
 
-  document.getElementById("logoutBtn").onclick = () => {
+  document.getElementById("logoutBtn").onclick = async () => {
+    if (!(await askConfirm("¿Seguro que quieres cerrar sesión en este navegador?", "Cerrar sesión"))) return;
     fetch("/api/logout", { method: "POST", headers: authHeaders() }).catch(() => {});
     token = ""; localStorage.removeItem(TOKEN_KEY);
     data = { ...empty };
@@ -1569,7 +1757,7 @@
 
   // ---------- Configuración ----------
   const SET_KEY = "ov-settings";
-  let settings = { theme: "dark", size: "normal", showHabits: true };
+  let settings = { theme: "dark", size: "normal", showHabits: true, lang: "es", reminder: { on: false, time: "08:00", last: "" } };
   try {
     settings = Object.assign(settings, JSON.parse(localStorage.getItem(SET_KEY)) || {});
   } catch (e) { /* ajustes por defecto */ }
@@ -1583,6 +1771,7 @@
     document.querySelectorAll("[data-theme]").forEach(b => b.classList.toggle("on", b.dataset.theme === settings.theme));
     document.querySelectorAll("[data-size]").forEach(b => b.classList.toggle("on", b.dataset.size === settings.size));
     document.getElementById("setHabits").checked = !!settings.showHabits;
+    document.getElementById("setRem").checked = !!(settings.reminder && settings.reminder.on);
   }
   document.querySelectorAll("[data-theme]").forEach(b => b.onclick = () => {
     settings.theme = b.dataset.theme; saveSettings(); applySettings();
@@ -1593,11 +1782,641 @@
   document.getElementById("setHabits").onchange = e => {
     settings.showHabits = e.target.checked; saveSettings(); renderCalendar();
   };
+  const remPicker = timePicker(document.getElementById("remTimeBox"));
   document.getElementById("openSettings").onclick = () => {
     document.querySelectorAll(".nav button").forEach(b => b.classList.remove("active"));
     views.forEach(v => v.classList.toggle("active", v.id === "settings"));
   };
   applySettings();
+
+  // ---------- Búsqueda, exportación, recordatorio y hábitos por semana ----------
+  function goView(v) {
+    document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("active", b.dataset.view === v));
+    views.forEach(x => x.classList.toggle("active", x.id === v));
+    if (v === "today") renderToday();
+    if (v === "habits") renderHabitWeek();
+    if (v === "friends") loadFriends();
+    if (v === "calendar") renderCalendar();
+  }
+
+  // Búsqueda
+  const sQuery = document.getElementById("sQuery");
+  function renderSearch() {
+    const q = sQuery.value.trim().toLowerCase();
+    const box = document.getElementById("sResults");
+    box.innerHTML = "";
+    if (!q) {
+      const p = document.createElement("p");
+      p.className = "sub"; p.style.margin = "0";
+      p.textContent = "Escribe para buscar.";
+      box.appendChild(p);
+      return;
+    }
+    const hits = [];
+    data.events.filter(e => (e.title || "").toLowerCase().includes(q)).forEach(e => hits.push({
+      icon: "📅", type: "Evento", label: e.title, sub: e.date + (e.time ? " · " + e.time : ""),
+      go: () => { goView("calendar"); setCalView("day", new Date(e.date + "T00:00")); }
+    }));
+    data.tasks.filter(t => (t.title || "").toLowerCase().includes(q)).forEach(t => hits.push({
+      icon: "☐", type: "Tarea", label: t.title, sub: t.area + (t.date ? " · " + t.date : ""),
+      go: () => goView("tasks")
+    }));
+    data.notes.filter(n => (n.text || "").toLowerCase().includes(q)).forEach(n => hits.push({
+      icon: "📝", type: "Nota", label: (n.text || "").trim().slice(0, 60) || "Nota vacía", sub: "",
+      go: () => goView("notes")
+    }));
+    data.habits.filter(h => (h.title || "").toLowerCase().includes(q)).forEach(h => hits.push({
+      icon: "🔁", type: "Hábito", label: h.title, sub: daysLabel(h.days),
+      go: () => goView("habits")
+    }));
+    if (!hits.length) {
+      const p = document.createElement("p");
+      p.className = "sub"; p.style.margin = "0";
+      p.textContent = "Sin resultados para \"" + sQuery.value.trim() + "\".";
+      box.appendChild(p);
+      return;
+    }
+    hits.slice(0, 50).forEach(hit => {
+      const el = document.createElement("div");
+      el.className = "fcard sres";
+      el.innerHTML = '<div class="fav sicon"></div><div class="finfo"><div class="fname"></div><div class="fcode"></div></div>';
+      el.querySelector(".sicon").textContent = hit.icon;
+      el.querySelector(".fname").textContent = hit.label;
+      el.querySelector(".fcode").textContent = hit.type + (hit.sub ? " · " + hit.sub : "");
+      el.onclick = hit.go;
+      box.appendChild(el);
+    });
+  }
+  sQuery.addEventListener("input", renderSearch);
+
+  // Hábitos por semana: cuadrícula de días marcables
+  let hwOffset = 0;
+  function cellDiv(cls, text) {
+    const d = document.createElement("div");
+    d.className = "hw-c " + cls;
+    d.textContent = text;
+    return d;
+  }
+  function renderHabitWeek() {
+    const box = document.getElementById("hweek");
+    const today = new Date();
+    const todayKey = iso(today);
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - ((today.getDay() + 6) % 7) + hwOffset * 7);
+    const days = [];
+    for (let i = 0; i < 7; i++) { const d = new Date(monday); d.setDate(monday.getDate() + i); days.push(d); }
+    document.getElementById("hwTitle").textContent =
+      "Semana del " + days[0].getDate() + " al " + days[6].getDate() + " de " + MESES_T()[days[6].getMonth()] + " " + days[6].getFullYear();
+    box.innerHTML = "";
+    if (!data.habits.length) {
+      const p = document.createElement("p");
+      p.className = "sub"; p.style.margin = "0 0 16px";
+      p.textContent = "Aún no tienes hábitos para mostrar.";
+      box.appendChild(p);
+      return;
+    }
+    const grid = document.createElement("div");
+    grid.className = "hw";
+    grid.style.gridTemplateColumns = "minmax(110px, 1.4fr) repeat(7, minmax(34px, 1fr))";
+    grid.appendChild(cellDiv("hw-h", ""));
+    days.forEach(d => grid.appendChild(cellDiv("hw-h" + (iso(d) === todayKey ? " today" : ""), DOW_T()[(d.getDay() + 6) % 7] + " " + d.getDate())));
+    data.habits.forEach(h => {
+      grid.appendChild(cellDiv("hw-name", h.title));
+      days.forEach(d => {
+        const k = iso(d);
+        if (!h.days.includes(d.getDay())) { grid.appendChild(cellDiv("hw-off", "·")); return; }
+        const done = !!h.logs[k];
+        const b = document.createElement("button");
+        b.className = "hw-cell" + (done ? " on" : "") + (k === todayKey ? " today" : "");
+        b.textContent = done ? "✓" : "";
+        b.disabled = k > todayKey;
+        b.title = h.title + " · " + k;
+        b.onclick = () => { h.logs[k] = !done; save(); renderHabitWeek(); renderHabitList(); renderToday(); };
+        grid.appendChild(b);
+      });
+    });
+    box.appendChild(grid);
+  }
+  document.getElementById("hwPrev").onclick = () => { hwOffset--; renderHabitWeek(); };
+  document.getElementById("hwNext").onclick = () => { hwOffset++; renderHabitWeek(); };
+
+  // Exportar datos
+  document.getElementById("exportBtn").onclick = () => {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      profile: { name: profile.name, motto: profile.motto, birthday: profile.birthday, role: profile.role, goals: profile.goals },
+      data
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "organizacion-vida-" + iso(new Date()) + ".json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast("Archivo descargado.");
+  };
+
+  // Importar datos (reemplaza lo actual, con confirmación)
+  const LIST_KEYS = ["events", "tasks", "notes", "habits"];
+  document.getElementById("importFile").onchange = async e => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = "";
+    if (!file) return;
+    let payload;
+    try { payload = JSON.parse(await file.text()); } catch (err) {
+      toast("El archivo no es válido.");
+      return;
+    }
+    const src = payload && payload.data && typeof payload.data === "object" ? payload.data : null;
+    if (!src || !LIST_KEYS.some(k => Array.isArray(src[k]))) {
+      toast("Ese archivo no tiene datos de Mi organización.");
+      return;
+    }
+    const counts = LIST_KEYS.map(k => (Array.isArray(src[k]) ? src[k].length : 0));
+    const summary = counts[0] + " eventos, " + counts[1] + " tareas, " + counts[2] + " notas y " + counts[3] + " hábitos";
+    if (!(await askConfirm("¿Importar " + summary + "? Reemplazará tus datos actuales.", "Importar"))) return;
+
+    const next = { ...empty };
+    LIST_KEYS.forEach(k => { if (Array.isArray(src[k])) next[k] = src[k]; });
+    data = next;
+    save();
+
+    const pf = payload.profile;
+    if (pf && typeof pf === "object") {
+      profile = Object.assign({}, profile, {
+        name: typeof pf.name === "string" ? pf.name.slice(0, 30) : profile.name,
+        motto: typeof pf.motto === "string" ? pf.motto.slice(0, 80) : profile.motto,
+        birthday: /^\d{4}-\d{2}-\d{2}$/.test(pf.birthday) ? pf.birthday : profile.birthday,
+        role: ["estudiante", "trabajo", "casa"].includes(pf.role) ? pf.role : profile.role,
+        goals: Array.isArray(pf.goals) ? pf.goals.slice(0, 10) : profile.goals
+      });
+      saveProfile();
+      updateBubble();
+      renderProfileExtras();
+    }
+    renderEverything();
+    toast("Datos importados: " + summary + ".");
+  };
+
+  // Recordatorio diario (funciona mientras la página esté abierta)
+  const setRem = document.getElementById("setRem");
+  setRem.onchange = async e => {
+    if (e.target.checked && typeof Notification !== "undefined" && Notification.permission === "default") {
+      await Notification.requestPermission();
+    }
+    settings.reminder.on = e.target.checked;
+    saveSettings();
+    toast(e.target.checked ? "Recordatorio activado a las " + settings.reminder.time + "." : "Recordatorio desactivado.");
+  };
+  remPicker.set(settings.reminder.time);
+  document.querySelectorAll("#remTimeBox select").forEach(s => s.addEventListener("change", () => {
+    const v = remPicker.get();
+    if (v) { settings.reminder.time = v; saveSettings(); }
+  }));
+
+  function checkReminder() {
+    if (!window.__ovReady) return;
+    const r = settings.reminder;
+    if (!r || !r.on) return;
+    const now = new Date();
+    const key = iso(now);
+    if (r.last === key) return;
+    const [hh, mm] = (r.time || "08:00").split(":").map(Number);
+    if (now.getHours() * 60 + now.getMinutes() < hh * 60 + mm) return;
+    r.last = key;
+    saveSettings();
+    const pending = data.habits.filter(h => h.days.includes(now.getDay()) && !h.logs[key]).length;
+    const body = pending
+      ? "Tienes " + pending + (pending === 1 ? " hábito pendiente" : " hábitos pendientes") + " para hoy."
+      : "Hoy no tienes hábitos pendientes. ¡Buen trabajo!";
+    if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+      new Notification("Mi organización", { body });
+    }
+    toast(body);
+  }
+  setInterval(checkReminder, 30000);
+
+  // ---------- Bienvenida: preguntas al iniciar sesión ----------
+  function startOnboarding() {
+    if (document.getElementById("onboard")) return;
+    const ob = {
+      name: profile.name || "",
+      lang: (settings.lang) || "es",
+      role: profile.role || "",
+      photo: profile.photo || "",
+      theme: settings.theme || "dark",
+      remOn: !!(settings.reminder && settings.reminder.on),
+      remTime: (settings.reminder && settings.reminder.time) || "08:00"
+    };
+    let step = 0;
+    let picker = null;
+
+    const wrap = document.createElement("div");
+    wrap.id = "onboard";
+    wrap.className = "modal open";
+    wrap.innerHTML = '<div class="box obox">' +
+      '<div class="ob-prog"></div>' +
+      '<div class="ob-body"></div>' +
+      '<div class="ob-nav"><button class="ob-skip">Omitir</button><button class="primary ob-next">Siguiente</button></div>' +
+      '</div>';
+    document.body.appendChild(wrap);
+
+    const prog = wrap.querySelector(".ob-prog");
+    const body = wrap.querySelector(".ob-body");
+    const next = wrap.querySelector(".ob-next");
+    const skip = wrap.querySelector(".ob-skip");
+
+    // Una pequeña función para crear una fila de opciones tipo botón
+    function options(list, current, onPick) {
+      const seg = document.createElement("div");
+      seg.className = "seg ob-seg";
+      list.forEach(([value, label]) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = label;
+        if (value === current) b.classList.add("on");
+        b.onclick = () => {
+          onPick(value);
+          seg.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+        };
+        seg.appendChild(b);
+      });
+      return seg;
+    }
+
+    const steps = [
+      {
+        title: "¡Bienvenida!",
+        q: "¿Cómo te llamas?",
+        render() {
+          const inp = document.createElement("input");
+          inp.id = "obName";
+          inp.maxLength = 30;
+          inp.placeholder = "Tu nombre";
+          inp.value = ob.name;
+          inp.oninput = () => { ob.name = inp.value.trim(); };
+          body.appendChild(inp);
+          setTimeout(() => inp.focus(), 50);
+        }
+      },
+      {
+        title: "Tu foto",
+        q: "Sube una foto para tu burbuja de perfil. Puedes omitir este paso.",
+        render() {
+          const box = document.createElement("div");
+          box.className = "ob-photo";
+          const prev = document.createElement("div");
+          prev.className = "ph-prev";
+          const draw = () => {
+            prev.innerHTML = "";
+            if (ob.photo) {
+              const im = document.createElement("img");
+              im.src = ob.photo; im.alt = "";
+              prev.appendChild(im);
+            } else {
+              prev.textContent = initials(ob.name) || "🙂";
+            }
+          };
+          const file = document.createElement("input");
+          file.type = "file";
+          file.accept = "image/*";
+          file.hidden = true;
+          const pick = document.createElement("button");
+          pick.type = "button";
+          pick.textContent = ob.photo ? "Cambiar foto" : "Elegir foto";
+          pick.onclick = () => file.click();
+          const remove = document.createElement("button");
+          remove.type = "button";
+          remove.textContent = "Quitar";
+          remove.onclick = () => { ob.photo = ""; pick.textContent = "Elegir foto"; draw(); };
+          file.onchange = e => {
+            const f = e.target.files && e.target.files[0];
+            if (!f) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+              const img = new Image();
+              img.onload = () => {
+                const size = 160;
+                const c = document.createElement("canvas");
+                c.width = size; c.height = size;
+                const s = Math.min(img.width, img.height);
+                c.getContext("2d").drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size);
+                ob.photo = c.toDataURL("image/jpeg", 0.85);
+                pick.textContent = "Cambiar foto";
+                draw();
+              };
+              img.src = reader.result;
+            };
+            reader.readAsDataURL(f);
+            e.target.value = "";
+          };
+          const btns = document.createElement("div");
+          btns.className = "ob-photo-btns";
+          btns.appendChild(pick);
+          btns.appendChild(remove);
+          btns.appendChild(file);
+          box.appendChild(prev);
+          box.appendChild(btns);
+          body.appendChild(box);
+          draw();
+        }
+      },
+      {
+        title: "Idioma",
+        q: "¿En qué idioma quieres la página?",
+        render() {
+          body.appendChild(options([["es", "Español"], ["en", "English"]], ob.lang, v => {
+            ob.lang = v;
+            setLanguage(v);
+          }));
+        }
+      },
+      {
+        title: "Tu día a día",
+        q: "¿Cómo describirías tu rutina?",
+        render() {
+          body.appendChild(options([["estudiante", "Estudiante"], ["trabajo", "Trabajo"], ["casa", "Casa"]], ob.role, v => { ob.role = v; }));
+          const p = document.createElement("p");
+          p.className = "ob-hint";
+          p.textContent = "Esto cambia qué aparece primero en Hoy. Puedes cambiarlo después en Perfil.";
+          body.appendChild(p);
+        }
+      },
+      {
+        title: "Apariencia",
+        q: "¿Qué tema prefieres?",
+        render() {
+          body.appendChild(options([["dark", "Oscuro"], ["light", "Claro"]], ob.theme, v => { ob.theme = v; }));
+        }
+      },
+      {
+        title: "Recordatorio",
+        q: "¿Quieres un aviso diario para tus hábitos?",
+        render() {
+          const yes = options([["si", "Sí"], ["no", "No"]], ob.remOn ? "si" : "no", v => {
+            ob.remOn = v === "si";
+            pickerBox.style.display = ob.remOn ? "" : "none";
+          });
+          body.appendChild(yes);
+          const pickerBox = document.createElement("div");
+          pickerBox.className = "tpick ob-time";
+          pickerBox.style.display = ob.remOn ? "" : "none";
+          body.appendChild(pickerBox);
+          picker = timePicker(pickerBox);
+          picker.set(ob.remTime);
+        }
+      },
+      {
+        title: "Listo" + (ob.name ? ", " + ob.name : "") + "",
+        q: "Puedes cambiar todo esto después en Configuración y Perfil.",
+        render() {
+          const p = document.createElement("p");
+          p.className = "ob-hint";
+          p.textContent = ob.remOn
+            ? "Recordatorio diario a las " + ob.remTime + "."
+            : "Sin recordatorio diario.";
+          body.appendChild(p);
+        }
+      }
+    ];
+
+    function show() {
+      prog.innerHTML = "";
+      steps.forEach((_, i) => {
+        const bar = document.createElement("span");
+        if (i <= step) bar.className = "on";
+        prog.appendChild(bar);
+      });
+      const s = steps[step];
+      body.innerHTML = "";
+      const t = document.createElement("h2");
+      t.className = "ob-title";
+      t.textContent = s.title;
+      const q = document.createElement("p");
+      q.className = "ob-q";
+      q.textContent = s.q;
+      body.appendChild(t);
+      body.appendChild(q);
+      picker = null;
+      s.render();
+      next.textContent = step === steps.length - 1 ? "Empezar" : "Siguiente";
+      skip.style.visibility = step === steps.length - 1 ? "hidden" : "visible";
+    }
+
+    function finish() {
+      profile.name = ob.name || profile.name;
+      profile.role = ob.role;
+      profile.photo = ob.photo || "";
+      profile.onboarded = true;
+      saveProfile();
+      settings.theme = ob.theme;
+      settings.lang = ob.lang;
+      settings.reminder.on = ob.remOn;
+      if (picker && picker.get()) settings.reminder.time = picker.get();
+      saveSettings();
+      applySettings();
+      applyAccent();
+      updateBubble();
+      document.getElementById("pName").value = profile.name;
+      renderProfileExtras();
+      renderToday();
+      applyRoleOrder();
+      wrap.remove();
+      toast("¡Listo! Puedes cambiar todo esto cuando quieras.");
+    }
+
+    next.onclick = () => {
+      if (step === steps.length - 1) return finish();
+      step++;
+      show();
+    };
+    skip.onclick = () => {
+      profile.onboarded = true;
+      saveProfile();
+      wrap.remove();
+    };
+    show();
+  }
+
+  // ---------- Idioma (español / English) ----------
+  // Diccionario: clave = texto en español tal como aparece; valor = traducción.
+  const EN = {
+    "Ej: Ir al gym, leer 20 min, tomar agua": "E.g. Go to the gym, read 20 min, drink water",
+    "Ej: agenda dentista 2026-10-20 10:00": "E.g. dentist appointment 2026-10-20 10:00",
+    "Ej. Un día a la vez": "E.g. One day at a time",
+    "Contraseña (mín. 6 caracteres)": "Password (min. 6 characters)",
+    "Nueva meta, por ejemplo: correr 5 km": "New goal, for example: run 5 km",
+    "Nueva tarea": "New task",
+    "Título": "Title",
+    "¿Cómo te llamas?": "What is your name?",
+    "Tu nombre": "Your name",
+    "Nombre del hábito": "Habit name",
+
+    "Acciones que se repiten. Elige los días y aparecerán en Hoy cada semana.": "Recurring actions. Choose the days and they will appear in Today every week.",
+    "Haz clic en un día para agregar un evento.": "Click a day to add an event.",
+    "Pendientes con fecha y área.": "Pending tasks with date and area.",
+    "Ideas y recordatorios rápidos.": "Quick ideas and reminders.",
+    "Tu nombre y el color que se usa en la página.": "Your name and the color used on the page.",
+    "Agrega amigos con su código o su correo, y mira sus estadísticas si las comparten.": "Add friends with their code or email, and see their statistics if they share them.",
+    "Escribe en lenguaje natural.": "Write in natural language.",
+    "Sin tareas todavía.": "No tasks yet.",
+    "Aún no tienes hábitos. Agrega el primero arriba.": "You have no habits yet. Add the first one above.",
+    "No hay hábitos programados para hoy.": "No habits scheduled for today.",
+    "Sin tareas para hoy.": "No tasks for today.",
+    "Cambiar foto": "Change photo",
+    "Elegir foto": "Choose photo",
+    "Copiado": "Copied",
+    "Copiar": "Copy",
+    "En curso": "In progress",
+    "Enviando…": "Sending…",
+    "Esta persona decidió no compartir sus estadísticas.": "This person chose not to share their statistics.",
+    "Guardado": "Saved",
+    "No hay conexión con el servidor. Intenta de nuevo.": "No connection to the server. Try again.",
+    "No hay conexión con el servidor.": "No connection to the server.",
+    "Pensando…": "Thinking…",
+    "Prioridad ": "Priority ",
+    "Sin resultados para ": "No results for ",
+    "Tarea": "Task",
+    "⚙ Configuración": "⚙ Settings",
+    "⚙ Configuración ": "⚙ Settings ",
+
+    "Hoy": "Today", "Calendario": "Calendar", "Hábitos": "Habits", "Tareas": "Tasks", "Notas": "Notes",
+    "Buscar": "Search", "Amigos": "Friends", "Asistente": "Assistant", "Perfil": "Profile",
+    "Configuración": "Settings", "Cerrar sesión": "Log out", "Mi organización": "My organization",
+    "Mes": "Month", "Semana": "Week", "Día": "Day", "Año": "Year", "+ Evento": "+ Event",
+    "Guardar": "Save", "Guardar nombre": "Save name", "Cancelar": "Cancel", "Eliminar": "Delete",
+    "Agregar": "Add", "Enviar": "Send", "Aceptar": "Accept", "Rechazar": "Decline", "Ver perfil": "View profile",
+    "Siguiente": "Next", "Omitir": "Skip", "Empezar": "Start", "Copiar": "Copy", "Copiado": "Copied",
+    "Hábitos de hoy": "Today's habits", "Agenda": "Agenda", "Tareas para hoy": "Tasks for today",
+    "Nada agendado hoy.": "Nothing scheduled today.", "Sin tareas para hoy.": "No tasks for today.",
+    "Sin notas todavía.": "No notes yet.", "Sin resultados": "No results",
+    "Tema": "Theme", "Oscuro": "Dark", "Claro": "Light", "Tamaño de texto": "Text size",
+    "Pequeño": "Small", "Normal": "Normal", "Grande": "Large", "Color de acento": "Accent color",
+    "Mostrar hábitos en la vista de horas": "Show habits in the time view",
+    "Recordatorio diario": "Daily reminder", "Exportar mis datos": "Export my data", "Exportar": "Export",
+    "Importar datos": "Import data", "Elegir archivo": "Choose file", "Idioma": "Language",
+    "Idioma de la página": "Page language", "Español": "Español", "English": "English",
+    "Sí": "Yes", "No": "No", "Nombre": "Name", "Frase personal": "Personal motto", "Cumpleaños": "Birthday",
+    "Ocupación": "Occupation", "Estudiante": "Student", "Trabajo": "Work", "Casa": "Home",
+    "Metas del mes": "Monthly goals", "Estadísticas": "Statistics", "Privacidad para amigos": "Privacy for friends",
+    "Compartir foto": "Share photo", "Compartir estadísticas": "Share statistics", "Subir foto": "Upload photo",
+    "Quitar foto": "Remove photo", "Quitar": "Remove", "Tu código de amigo": "Your friend code",
+    "Código OV-XXXX o correo": "Code OV-XXXX or email", "Solicitudes recibidas": "Requests received",
+    "Solicitudes enviadas": "Requests sent", "Mis amigos": "My friends", "Agregar amigo": "Add friend",
+    "Vista previa": "Preview", "Eliminar amigo": "Delete friend", "Cerrar": "Close",
+    "Escribe para buscar.": "Type to search.", "Eventos": "Events", "Tarea": "Task", "Nota": "Note",
+    "Evento": "Event", "Hábito": "Habit", "Nueva meta": "New goal", "Objetivo": "Goal",
+    "Recordatorio": "Reminder", "Exportar datos": "Export data", "Importar": "Import",
+    "¡Bienvenida!": "Welcome!", "¿Cómo te llamas?": "What is your name?", "Tu foto": "Your photo",
+    "Tu día a día": "Your routine", "Apariencia": "Appearance", "Listo": "Done",
+    "¿Qué tema prefieres?": "Which theme do you prefer?", "Tu nombre": "Your name",
+    "Escribe algo, por ejemplo: dentista": "Type something, for example: dentist",
+    "Encuentra eventos, tareas, notas y hábitos desde un solo campo.": "Find events, tasks, notes and habits in one place.",
+    "Aún no tienes hábitos para mostrar.": "You have no habits to show yet.",
+    "Aún no tienes amigos. Agrega a alguien con su código.": "You have no friends yet. Add someone with their code.",
+    "Aún no tienes metas. Agrega la primera abajo.": "You have no goals yet. Add the first one below.",
+    "Entrar": "Log in", "Registrarme": "Sign up", "Inicia sesión": "Log in", "Crea tu cuenta": "Create your account",
+    "¿No tienes cuenta? Regístrate": "No account? Sign up", "¿Ya tienes cuenta? Inicia sesión": "Already have an account? Log in",
+    "Correo": "Email", "Contraseña": "Password", "Regístrate": "Sign up",
+    "Buenos días": "Good morning", "Buenas tardes": "Good afternoon", "Buenas noches": "Good evening",
+    "Hora (opcional)": "Time (optional)", "Inicio": "Start", "Fin": "End", "Nuevo evento": "New event",
+    "Título": "Title", "Guardado": "Saved", "Eliminar evento": "Delete event", "Nueva tarea": "New task",
+    "Área": "Area", "Prioridad": "Priority", "Alta": "High", "Media": "Medium", "Baja": "Low",
+    "Lista": "List", "Cuadrícula": "Grid", "Nueva nota": "New note", "Agregar hábito": "Add habit",
+    "Editar": "Edit", "Editar hábito": "Edit habit", "Nombre del hábito": "Habit name", "Guardar cambios": "Save changes",
+    "Ajustes de la página. Se guardan en este navegador.": "Page settings. Saved in this browser.",
+    "Escribe algo": "Type something", "Buscar en mi organización": "Search my organization",
+    "Trabajo": "Work", "Salud": "Health", "Casa": "Home", "Personal": "Personal",
+    "Oscuro o claro.": "Dark or light.",
+    "Ajusta las letras de toda la página.": "Adjusts the text across the whole page.",
+    "Idioma de la página.": "Page language.",
+    "Botones, progreso y detalles de la página.": "Buttons, progress and page details.",
+    "Aparecen como bloques punteados en Día y Semana.": "Shown as dashed blocks in Day and Week.",
+    "Te avisa a la hora elegida si tienes hábitos pendientes. Funciona mientras la página esté abierta.": "Reminds you at the chosen time if you have pending habits. Works while the page is open.",
+    "Descarga tus hábitos, eventos, tareas y notas en un archivo.": "Download your habits, events, tasks and notes as a file.",
+    "Carga un archivo exportado antes. Reemplaza tus datos actuales.": "Load a previously exported file. It replaces your current data.",
+    "Compártelo para que te agreguen.": "Share it so others can add you.",
+    "Tu nombre y tu código siempre se ven. Elige lo demás:": "Your name and code are always visible. Choose the rest:",
+    "Sube una foto para tu burbuja de perfil. Puedes omitir este paso.": "Upload a photo for your profile bubble. You can skip this step.",
+    "¿En qué idioma quieres la página?": "Which language do you want the page in?",
+    "¿Cómo describirías tu rutina?": "How would you describe your routine?",
+    "¿Quieres un aviso diario para tus hábitos?": "Do you want a daily reminder for your habits?",
+    "Puedes cambiar todo esto después en Configuración y Perfil.": "You can change all of this later in Settings and Profile.",
+    "Esto cambia qué aparece primero en Hoy. Puedes cambiarlo después en Perfil.": "This changes what appears first in Today. You can change it later in Profile.",
+    "🔥 Racha más larga": "🔥 Longest streak",
+    "✅ Hábitos cumplidos este mes": "✅ Habits completed this month",
+    "📌 Tareas terminadas": "📌 Tasks completed",
+    "📅 Días activos este mes": "📅 Active days this month",
+    "Hoy es": "Today is", "Semana del": "Week of", "Mes anterior": "Previous month", "Mes siguiente": "Next month"
+  };
+  let lang = settings.lang || "es";
+  const MESES_EN = ["january","february","march","april","may","june","july","august","september","october","november","december"];
+  const DOW_EN = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  const MESES_T = () => (lang === "en" ? MESES_EN : MESES);
+  const DOW_T = () => (lang === "en" ? DOW_EN : DOW);
+  const localeTag = () => (lang === "en" ? "en-US" : "es-MX");
+  function greetingWord(hr) {
+    if (lang === "en") return hr < 12 ? "Good morning" : hr < 19 ? "Good afternoon" : "Good evening";
+    return hr < 12 ? "Buenos días" : hr < 19 ? "Buenas tardes" : "Buenas noches";
+  }
+  const ORIG = new Map(); // nodo de texto -> texto original en español
+
+  function translateTextNode(n) {
+    if (!ORIG.has(n)) ORIG.set(n, n.nodeValue);
+    const orig = ORIG.get(n);
+    if (lang !== "en") { n.nodeValue = orig; return; }
+    const key = orig.trim();
+    const out = (key && EN[key] !== undefined) ? orig.replace(key, EN[key]) : orig;
+    n.nodeValue = out
+      .replace(/(\d+) días/g, "$1 days")
+      .replace(/(\d+) día\b/g, "$1 day")
+      .replace(/Tienes (\d+) (hábitos|hábito) pendientes? para hoy\./, (m, c) => "You have " + c + " pending habit" + (c === "1" ? "" : "s") + " for today.");
+  }
+  function translateTree(root) {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(n => {
+      const tag = n.parentNode && n.parentNode.nodeName;
+      if (tag === "SCRIPT" || tag === "STYLE") return;
+      translateTextNode(n);
+    });
+    root.querySelectorAll && root.querySelectorAll("[placeholder]").forEach(el => {
+      if (!ORIG.has(el)) ORIG.set(el, el.getAttribute("placeholder"));
+      const orig = ORIG.get(el);
+      const key = orig.trim();
+      el.setAttribute("placeholder", lang === "en" && EN[key] !== undefined ? EN[key] : orig);
+    });
+  }
+
+  function applyLang() {
+    document.documentElement.lang = lang === "en" ? "en" : "es";
+    translateTree(document.body);
+    document.querySelectorAll("#setLang button").forEach(b => b.classList.toggle("on", b.dataset.lang === lang));
+    if (window.__ovReady) {
+      renderCalendar(); renderTasks(); renderNotes(); renderHabitList(); renderToday(); renderHabitWeek();
+    }
+  }
+  function setLanguage(v) {
+    lang = v;
+    settings.lang = v;
+    saveSettings();
+    applyLang();
+  }
+  document.querySelectorAll("#setLang button").forEach(b => b.onclick = () => setLanguage(b.dataset.lang));
+
+  // Los textos que se crean después (avisos, menús, bienvenida) también se traducen
+  new MutationObserver(records => {
+    if (lang !== "en") return;
+    records.forEach(r => r.addedNodes.forEach(node => {
+      if (node.nodeType === 3) translateTextNode(node);
+      else if (node.nodeType === 1) translateTree(node);
+    }));
+  }).observe(document.body, { childList: true, subtree: true });
+
+  applyLang();
 
   // ---------- Perfil y personalización ----------
   const PROFILE_KEY = "ov-profile";
@@ -1613,7 +2432,7 @@
     "#b5e48c", // lima
     "#ffb38a"  // mandarina
   ];
-  let profile = { name: "", accent: "#c9b8ff", photo: "", motto: "", birthday: "", role: "", goals: [], goalsMonth: "", share: { photo: true, stats: true } };
+  let profile = { name: "", accent: "#c9b8ff", photo: "", motto: "", birthday: "", role: "", goals: [], goalsMonth: "", share: { photo: true, stats: true }, onboarded: false };
   try {
     profile = Object.assign(profile, JSON.parse(localStorage.getItem(PROFILE_KEY)) || {});
   } catch (e) { /* perfil por defecto */ }
@@ -1631,7 +2450,7 @@
     }, 500);
   }
 
-  const PROFILE_BLANK = { name: "", accent: "#c9b8ff", photo: "", motto: "", birthday: "", role: "", goals: [], goalsMonth: "", share: { photo: true, stats: true } };
+  const PROFILE_BLANK = { name: "", accent: "#c9b8ff", photo: "", motto: "", birthday: "", role: "", goals: [], goalsMonth: "", share: { photo: true, stats: true }, onboarded: false };
   function hasProfileData(p) {
     return !!(p && (p.name || p.photo || p.motto || p.birthday || p.role || (p.goals && p.goals.length)));
   }
@@ -1648,6 +2467,7 @@
     applyAccent();
     updateBubble();
     renderProfileExtras();
+    if (!profile.onboarded) setTimeout(startOnboarding, 300);
   }
   function applyAccent() {
     document.documentElement.style.setProperty("--pc", profile.accent);
@@ -1772,9 +2592,9 @@
       paint();
       t.oninput = () => { g.title = t.value; saveProfile(); };
       range.oninput = () => { g.progress = +range.value; paint(); saveProfile(); };
-      row.querySelector(".gdel").onclick = () => {
+      row.querySelector(".gdel").onclick = async () => {
         const name = g.title || "esta meta";
-        if (!confirm('¿Eliminar "' + name + '"?')) return;
+        if (!(await askConfirm('¿Eliminar "' + name + '"?'))) return;
         profile.goals.splice(i, 1); saveProfile(); renderGoals();
       };
       card.appendChild(row);
@@ -1788,7 +2608,7 @@
     const addGoal = () => {
       const v = input.value.trim();
       if (!v) return;
-      if (profile.goals.length >= 10) { alert("Puedes tener hasta 10 metas."); return; }
+      if (profile.goals.length >= 10) { toast("Puedes tener hasta 10 metas."); return; }
       profile.goals.push({ title: v, progress: 0 });
       saveProfile(); renderGoals();
       document.getElementById("gNew").focus();
@@ -1856,7 +2676,8 @@
     reader.readAsDataURL(file);
     e.target.value = "";
   };
-  document.getElementById("phRemove").onclick = () => {
+  document.getElementById("phRemove").onclick = async () => {
+    if (!(await askConfirm("¿Quitar tu foto de perfil?", "Quitar"))) return;
     profile.photo = ""; saveProfile(); updateBubble(); renderPhotoPreview();
   };
   document.getElementById("pSaveMore").onclick = () => {
@@ -1951,7 +2772,10 @@
     fillList("fRequests", d.requests, "No tienes solicitudes pendientes.", c =>
       friendCard(c, actionsBox(
         btn("Aceptar", "primary", async () => { await friendsApi("friends/accept", { fromId: c.id }); loadFriends(); }),
-        btn("Rechazar", "", async () => { await friendsApi("friends/decline", { fromId: c.id }); loadFriends(); })
+        btn("Rechazar", "", async () => {
+          if (!(await askConfirm('¿Rechazar la solicitud de "' + (c.name || "esta persona") + '"?'))) return;
+          await friendsApi("friends/decline", { fromId: c.id }); loadFriends();
+        })
       )));
     fillList("fOutgoing", d.outgoing, "No has enviado solicitudes.", c =>
       friendCard(c, actionsBox(
@@ -1998,7 +2822,7 @@
       box.appendChild(grid);
     }
     const rm = btn("Eliminar amigo", "", async () => {
-      if (!confirm('¿Eliminar a "' + (card.name || "esta persona") + '" de tus amigos?')) return;
+      if (!(await askConfirm('¿Eliminar a "' + (card.name || "esta persona") + '" de tus amigos?'))) return;
       await friendsApi("friends/remove", { friendId: card.id });
       box.style.display = "none";
       loadFriends();
@@ -2026,8 +2850,8 @@
     updateBubble();
     const now = new Date();
     const h = now.getHours();
-    const greet = h < 12 ? "Buenos días" : h < 19 ? "Buenas tardes" : "Buenas noches";
-    document.getElementById("pPreviewDate").textContent = now.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" });
+    const greet = greetingWord(h);
+    document.getElementById("pPreviewDate").textContent = now.toLocaleDateString(localeTag(), { weekday: "long", day: "numeric", month: "long" });
     document.getElementById("pPreviewGreet").textContent = greet + (profile.name ? ", " + profile.name : "") + ".";
   }
   document.getElementById("pSave").onclick = () => {
