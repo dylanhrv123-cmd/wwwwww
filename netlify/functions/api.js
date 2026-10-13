@@ -56,6 +56,44 @@ async function getSession(st, event) {
   return { token, userId: s.userId };
 }
 
+const PROFILE_EMPTY = { name: "", accent: "#c9b8ff", photo: "", motto: "", birthday: "", role: "", goals: [], goalsMonth: "" };
+const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // sin caracteres confusos (0/O, 1/I)
+
+// Crea un código único tipo OV-7K3P y lo reserva para este usuario
+async function uniqueCode(st, userId) {
+  for (let tries = 0; tries < 10; tries++) {
+    let c = "";
+    for (let i = 0; i < 4; i++) c += CODE_CHARS[crypto.randomInt(CODE_CHARS.length)];
+    const code = "OV-" + c;
+    if (!(await st.get(`code:${code}`, { type: "json" }))) {
+      await st.setJSON(`code:${code}`, { userId });
+      return code;
+    }
+  }
+  throw new Error("No se pudo generar un código de amigo.");
+}
+
+// Solo acepta los campos del perfil con su tipo y tamaño; el código no se cambia desde el cliente
+function cleanProfile(input) {
+  const i = input || {};
+  const s = (v, max) => (typeof v === "string" ? v.slice(0, max) : "");
+  return {
+    name: s(i.name, 30),
+    accent: /^#[0-9a-fA-F]{6}$/.test(i.accent) ? i.accent : PROFILE_EMPTY.accent,
+    photo: typeof i.photo === "string" && i.photo.startsWith("data:image/") && i.photo.length < 300000 ? i.photo : "",
+    motto: s(i.motto, 80),
+    birthday: /^\d{4}-\d{2}-\d{2}$/.test(i.birthday) ? i.birthday : "",
+    role: ["estudiante", "trabajo", "casa"].includes(i.role) ? i.role : "",
+    goals: Array.isArray(i.goals)
+      ? i.goals.slice(0, 10).map(g => ({
+          title: s(g && g.title, 40),
+          progress: Math.min(100, Math.max(0, Number(g && g.progress) || 0))
+        }))
+      : [],
+    goalsMonth: /^\d{4}-\d{2}$/.test(i.goalsMonth) ? i.goalsMonth : "",
+  };
+}
+
 function cleanData(input) {
   const out = { ...EMPTY };
   for (const key of Object.keys(EMPTY)) {
@@ -164,6 +202,27 @@ exports.handler = async (event) => {
         reply: String(parsed.reply || "Listo."),
         actions: Array.isArray(parsed.actions) ? parsed.actions : [],
       });
+    }
+
+    if (path === "/profile") {
+      const s = await getSession(st, event);
+      if (!s) return json(401, { error: "Sesión no válida." });
+      const key = `profile:${s.userId}`;
+      let rec = await st.get(key, { type: "json" });
+
+      if (method === "GET") {
+        if (!rec) {
+          rec = { ...PROFILE_EMPTY, code: await uniqueCode(st, s.userId) };
+          await st.setJSON(key, rec);
+        }
+        return json(200, rec);
+      }
+      if (method === "PUT") {
+        if (!rec) rec = { code: await uniqueCode(st, s.userId) };
+        const next = { ...cleanProfile(parseBody(event)), code: rec.code };
+        await st.setJSON(key, next);
+        return json(200, next);
+      }
     }
 
     return json(404, { error: "Ruta no encontrada: " + path });
