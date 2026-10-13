@@ -285,6 +285,21 @@
   body[data-size="small"] { font-size: 14px; }
   body[data-size="large"] { font-size: 18px; }
 
+  /* Amigos */
+  .chk { display: flex; align-items: center; gap: 10px; font-size: 15px; cursor: pointer; }
+  .chk input { width: 18px; height: 18px; accent-color: var(--pc); }
+  .flist { display: grid; gap: 10px; max-width: 640px; }
+  .fcard { display: flex; align-items: center; gap: 14px; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 18px; padding: 12px 14px; flex-wrap: wrap; }
+  .fav { width: 46px; height: 46px; border-radius: 50%; background: var(--pc); color: #0b0b0c; display: grid;
+    place-items: center; font-weight: 700; overflow: hidden; flex-shrink: 0; }
+  .fav img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .finfo { flex: 1; min-width: 0; }
+  .fname { font-weight: 600; }
+  .fcode { font-size: 12px; color: var(--muted); letter-spacing: .08em; }
+  .factions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .factions button { font-size: 13px; padding: 6px 12px; }
+
   /* Código de amigo */
   .codecard { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
   .codeval { display: flex; gap: 10px; align-items: center; font-weight: 700; font-size: 18px; letter-spacing: .1em; }
@@ -360,6 +375,7 @@
       <button data-view="habits">Hábitos</button>
       <button data-view="tasks">Tareas</button>
       <button data-view="notes">Notas</button>
+      <button data-view="friends">Amigos</button>
       <button data-view="assistant">Asistente</button>
     </nav>
     <div class="sfoot">
@@ -538,6 +554,12 @@
           <span class="saved" id="pSavedMore"></span>
         </div>
       </div>
+      <div class="prof-card">
+        <div class="slabel">Privacidad para amigos</div>
+        <div class="sdesc">Tu nombre y tu código siempre se ven. Elige lo demás:</div>
+        <label class="chk"><input type="checkbox" id="shPhoto"> Compartir foto</label>
+        <label class="chk"><input type="checkbox" id="shStats"> Compartir estadísticas</label>
+      </div>
       <h2>Metas del mes</h2>
       <div class="prof-card" id="goalsCard"></div>
       <h2>Estadísticas</h2>
@@ -547,6 +569,27 @@
         <div class="hello" id="pPreviewDate"></div>
         <h1 id="pPreviewGreet" style="font-size:34px"></h1>
       </div>
+    </section>
+
+    <!-- AMIGOS -->
+    <section class="view" id="friends">
+      <h1>Amigos</h1>
+      <p class="sub">Agrega amigos con su código o su correo, y mira sus estadísticas si las comparten.</p>
+      <div class="prof-card">
+        <div class="slabel">Agregar amigo</div>
+        <div class="goal-add">
+          <input id="fAdd" maxlength="60" placeholder="Código OV-XXXX o correo">
+          <button class="primary" id="fAddBtn">Enviar</button>
+        </div>
+        <span class="saved" id="fMsg"></span>
+      </div>
+      <h2>Solicitudes recibidas</h2>
+      <div class="flist" id="fRequests"></div>
+      <h2>Solicitudes enviadas</h2>
+      <div class="flist" id="fOutgoing"></div>
+      <h2>Mis amigos</h2>
+      <div class="flist" id="fFriends"></div>
+      <div class="prof-card" id="fDetail" style="display:none; margin-top:20px"></div>
     </section>
 
     <!-- ASISTENTE -->
@@ -644,7 +687,7 @@
     }
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
-      fetch("/api/data", { method: "PUT", headers: authHeaders(), body: JSON.stringify(data) })
+      fetch("/api/data", { method: "PUT", headers: authHeaders(), body: JSON.stringify({ ...data, stats: computeStats() }) })
         .catch(() => { /* sin conexión: se reintentará con el siguiente cambio */ });
     }, 400);
   }
@@ -661,6 +704,7 @@
       views.forEach(v => v.classList.toggle("active", v.id === btn.dataset.view));
       if (btn.dataset.view === "today") renderToday();
       if (btn.dataset.view === "profile") renderProfileExtras();
+      if (btn.dataset.view === "friends") loadFriends();
     });
   });
 
@@ -1459,6 +1503,7 @@
     if (!res.ok) throw new Error("server");
     data = Object.assign({}, empty, await res.json());
     try { await loadProfileFromServer(); } catch (e) { /* el perfil se reintentará al cambiar algo */ }
+    save();
     return true;
   }
   async function boot() {
@@ -1568,7 +1613,7 @@
     "#b5e48c", // lima
     "#ffb38a"  // mandarina
   ];
-  let profile = { name: "", accent: "#c9b8ff", photo: "", motto: "", birthday: "", role: "", goals: [], goalsMonth: "" };
+  let profile = { name: "", accent: "#c9b8ff", photo: "", motto: "", birthday: "", role: "", goals: [], goalsMonth: "", share: { photo: true, stats: true } };
   try {
     profile = Object.assign(profile, JSON.parse(localStorage.getItem(PROFILE_KEY)) || {});
   } catch (e) { /* perfil por defecto */ }
@@ -1586,7 +1631,7 @@
     }, 500);
   }
 
-  const PROFILE_BLANK = { name: "", accent: "#c9b8ff", photo: "", motto: "", birthday: "", role: "", goals: [], goalsMonth: "" };
+  const PROFILE_BLANK = { name: "", accent: "#c9b8ff", photo: "", motto: "", birthday: "", role: "", goals: [], goalsMonth: "", share: { photo: true, stats: true } };
   function hasProfileData(p) {
     return !!(p && (p.name || p.photo || p.motto || p.birthday || p.role || (p.goals && p.goals.length)));
   }
@@ -1772,8 +1817,16 @@
     b.textContent = "Copiado";
     setTimeout(() => { b.textContent = "Copiar"; }, 1500);
   };
+  document.getElementById("shPhoto").onchange = e => {
+    profile.share = { ...profile.share, photo: e.target.checked }; saveProfile();
+  };
+  document.getElementById("shStats").onchange = e => {
+    profile.share = { ...profile.share, stats: e.target.checked }; saveProfile();
+  };
   function renderProfileExtras() {
     document.getElementById("pCode").textContent = profile.code || "—";
+    document.getElementById("shPhoto").checked = !(profile.share && profile.share.photo === false);
+    document.getElementById("shStats").checked = !(profile.share && profile.share.stats === false);
     ensureGoals();
     document.getElementById("pMotto").value = profile.motto || "";
     document.getElementById("pBirthday").value = profile.birthday || "";
@@ -1829,6 +1882,145 @@
       : ["habits", "agenda", "tasks"];
     order.forEach(k => today.appendChild(secs[k]));
   }
+
+  // ---------- Amigos ----------
+  async function friendsApi(path, body) {
+    const res = await fetch("/api/" + path, {
+      method: body ? "POST" : "GET",
+      headers: authHeaders(),
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const json = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, body: json };
+  }
+  function friendCard(c, actions) {
+    const el = document.createElement("div");
+    el.className = "fcard";
+    const av = document.createElement("div");
+    av.className = "fav";
+    if (c.photo) {
+      const im = document.createElement("img");
+      im.src = c.photo; im.alt = "";
+      av.appendChild(im);
+    } else {
+      av.textContent = initials(c.name) || "🙂";
+    }
+    const info = document.createElement("div");
+    info.className = "finfo";
+    const n = document.createElement("div");
+    n.className = "fname";
+    n.textContent = c.name || "Sin nombre";
+    const code = document.createElement("div");
+    code.className = "fcode";
+    code.textContent = c.code || "";
+    info.appendChild(n); info.appendChild(code);
+    el.appendChild(av); el.appendChild(info);
+    if (actions) el.appendChild(actions);
+    return el;
+  }
+  function fillList(id, items, emptyText, build) {
+    const box = document.getElementById(id);
+    box.innerHTML = "";
+    if (!items.length) {
+      const p = document.createElement("p");
+      p.className = "sub"; p.style.margin = "0";
+      p.textContent = emptyText;
+      box.appendChild(p);
+      return;
+    }
+    items.forEach(it => box.appendChild(build(it)));
+  }
+  function btn(text, cls, onClick) {
+    const b = document.createElement("button");
+    b.textContent = text;
+    if (cls) b.className = cls;
+    b.onclick = onClick;
+    return b;
+  }
+  function actionsBox(...buttons) {
+    const d = document.createElement("div");
+    d.className = "factions";
+    buttons.forEach(b => d.appendChild(b));
+    return d;
+  }
+
+  async function loadFriends() {
+    const r = await friendsApi("friends");
+    if (!r.ok) return;
+    const d = r.body;
+    fillList("fRequests", d.requests, "No tienes solicitudes pendientes.", c =>
+      friendCard(c, actionsBox(
+        btn("Aceptar", "primary", async () => { await friendsApi("friends/accept", { fromId: c.id }); loadFriends(); }),
+        btn("Rechazar", "", async () => { await friendsApi("friends/decline", { fromId: c.id }); loadFriends(); })
+      )));
+    fillList("fOutgoing", d.outgoing, "No has enviado solicitudes.", c =>
+      friendCard(c, actionsBox(
+        btn("Cancelar", "", async () => { await friendsApi("friends/cancel", { toId: c.id }); loadFriends(); })
+      )));
+    fillList("fFriends", d.friends, "Aún no tienes amigos. Agrega a alguien con su código.", c =>
+      friendCard(c, actionsBox(btn("Ver perfil", "", () => openFriend(c)))));
+  }
+
+  async function openFriend(card) {
+    const r = await friendsApi("friend-stats?id=" + encodeURIComponent(card.id));
+    const box = document.getElementById("fDetail");
+    box.style.display = "";
+    box.innerHTML = "";
+    box.appendChild(friendCard(card, null));
+    const note = document.createElement("p");
+    note.className = "sub"; note.style.margin = "12px 0 0";
+    if (!r.ok) {
+      note.textContent = (r.body && r.body.error) || "No se pudo cargar el perfil.";
+      box.appendChild(note);
+      return;
+    }
+    if (r.body.hidden) {
+      note.textContent = "Esta persona decidió no compartir sus estadísticas.";
+      box.appendChild(note);
+    } else {
+      const s = r.body.stats || { longest: 0, habitsMonth: 0, tasksDone: 0, activeDays: 0 };
+      const grid = document.createElement("div");
+      grid.className = "stats";
+      grid.style.marginTop = "14px";
+      [
+        ["🔥 Racha más larga", s.longest + (s.longest === 1 ? " día" : " días")],
+        ["✅ Hábitos cumplidos este mes", String(s.habitsMonth)],
+        ["📌 Tareas terminadas", String(s.tasksDone)],
+        ["📅 Días activos este mes", String(s.activeDays)]
+      ].forEach(([label, value]) => {
+        const c = document.createElement("div");
+        c.className = "stat";
+        const l = document.createElement("div"); l.className = "sl"; l.textContent = label;
+        const v = document.createElement("div"); v.className = "sv"; v.textContent = value;
+        c.appendChild(l); c.appendChild(v);
+        grid.appendChild(c);
+      });
+      box.appendChild(grid);
+    }
+    const rm = btn("Eliminar amigo", "", async () => {
+      if (!confirm('¿Eliminar a "' + (card.name || "esta persona") + '" de tus amigos?')) return;
+      await friendsApi("friends/remove", { friendId: card.id });
+      box.style.display = "none";
+      loadFriends();
+    });
+    rm.style.marginTop = "14px";
+    box.appendChild(rm);
+  }
+
+  document.getElementById("fAddBtn").onclick = async () => {
+    const input = document.getElementById("fAdd");
+    const msg = document.getElementById("fMsg");
+    const target = input.value.trim();
+    if (!target) return;
+    msg.textContent = "Enviando…";
+    const r = await friendsApi("friends/request", { target });
+    msg.textContent = r.ok ? (r.body.message || "") : (r.body.error || "No se pudo enviar.");
+    if (r.ok) input.value = "";
+    loadFriends();
+  };
+  document.getElementById("fAdd").addEventListener("keydown", e => {
+    if (e.key === "Enter") document.getElementById("fAddBtn").click();
+  });
 
   function updatePreview() {
     updateBubble();
