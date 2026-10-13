@@ -56,7 +56,7 @@ async function getSession(st, event) {
   return { token, userId: s.userId };
 }
 
-const PROFILE_EMPTY = { name: "", accent: "#c9b8ff", photo: "", motto: "", birthday: "", role: "", goals: [], goalsMonth: "", share: { photo: true, stats: true } };
+const PROFILE_EMPTY = { name: "", accent: "#c9b8ff", photo: "", motto: "", birthday: "", role: "", goals: [], goalsMonth: "", share: { photo: true, stats: true }, onboarded: false };
 const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // sin caracteres confusos (0/O, 1/I)
 
 // Crea un código único tipo OV-7K3P y lo reserva para este usuario
@@ -92,6 +92,7 @@ function cleanProfile(input) {
       : [],
     goalsMonth: /^\d{4}-\d{2}$/.test(i.goalsMonth) ? i.goalsMonth : "",
     share: { photo: !(i.share && i.share.photo === false), stats: !(i.share && i.share.stats === false) },
+    onboarded: i.onboarded === true,
   };
 }
 
@@ -274,14 +275,16 @@ exports.handler = async (event) => {
       const s = await getSession(st, event);
       if (!s) return json(401, { error: "Sesión no válida." });
 
-      const { message, today, data: ctx } = parseBody(event);
+      const { message, today, data: ctx, lang } = parseBody(event);
       if (typeof message !== "string" || !message.trim())
         return json(400, { error: "Escribe un mensaje." });
       if (!process.env.GEMINI_API_KEY)
         return json(500, { error: "Falta configurar GEMINI_API_KEY en Netlify." });
 
       const system = [
-        "Eres el asistente de una app de organización de vida. Respondes siempre en español, de forma breve y amable.",
+        lang === "en"
+          ? "You are the assistant of a life organization app. Always reply in English, briefly and kindly."
+          : "Eres el asistente de una app de organización de vida. Respondes siempre en español, de forma breve y amable.",
         "Responde SOLO con JSON con esta forma: {\"reply\": \"texto corto\", \"actions\": [...]}.",
         "Acciones permitidas (usa solo estas):",
         "- {\"type\":\"add_event\",\"title\":\"...\",\"date\":\"AAAA-MM-DD\",\"time\":\"HH:MM\" o \"\"}",
